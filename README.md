@@ -13,9 +13,10 @@ import do not program hardware. Notebook installation preserves existing files.
 
 See [distribution and API](docs/SOFTWARE_DISTRIBUTION.md) for the branch reinstall
 command (`--force-reinstall --no-cache-dir --no-deps`), cache layout and limits.
-Python >=3.9 is required. Packaging and loader behavior are implemented in 1.6;
-isolated installation/verification and the baseline notebook remain for 1.7,
-board integration for 1.8. No new board validation has been performed.
+Python >=3.9 is required. Packaging/loader behavior was implemented in 1.6; the baseline notebook and local
+distribution verification are prepared in 1.7. The initial isolated wheel check
+passed 16 cases on Python 3.13. Board integration remains for 1.8.
+See [local verification](docs/VERIFYING_DISTRIBUTION.md). No board validation has been performed.
 
 The original analytics and XADC routines are retained under the new namespace.
 [Original README](docs/LEGACY_SOUND_LOCALIZER.md), old test names and historical

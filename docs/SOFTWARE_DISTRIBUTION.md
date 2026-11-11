@@ -41,8 +41,8 @@ The sole runtime hardware configuration is
 No configuration is searched in the working directory, repository root, or old
 package. Missing/invalid configuration raises `HardwareConfigError`.
 `setup.py` includes resource paths inside the package only. Profile JSON and the
-historical notebooks are under the same `data/` tree. Wheel/sdist contents and
-an installation outside the checkout will be checked in step 1.7; not yet done.
+historical notebooks are under the same `data/` tree. Wheel/sdist contents and an installation outside the checkout were checked in
+step 1.7; see [verification](VERIFYING_DISTRIBUTION.md) and the current handoff.
 
 Example resource access without relying on the checkout:
 
@@ -107,7 +107,7 @@ in place. No global cache deletion and no writes to the original project's cache
 
 `pynq-acoustic-camera-notebooks [destination]` installs only missing notebook
 files in a dedicated destination and preserves every existing file. It never
-purges notebooks or evidence. The baseline notebook is prepared in 1.7.
+purges notebooks or evidence. The baseline notebook is included for explicit execution in 1.8.
 `--include-legacy` copies inherited examples under `legacy/`; they are unvalidated
 against this candidate and are excluded by default.
 
@@ -119,8 +119,8 @@ BOARD, and is not the default phase-1 loader or a generic PDM driver.
 
 ## Pending verification
 
-Step 1.7: isolated package build/install, installed resources, import provenance,
-download/cache rejection cases and baseline notebook. Step 1.8: real kernel,
+Step 1.7 supplies local build/install checks, installed resources, import provenance,
+download/cache rejection cases and the unexecuted baseline notebook. Step 1.8: real kernel,
 permissions, reinstall, explicit programming and notebook execution. No claim
 of board validation is made by the changes in 1.6.
 
