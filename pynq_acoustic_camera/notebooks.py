@@ -7,7 +7,7 @@ from pathlib import Path
 def install_notebooks(target_dir=None, *, include_legacy=False):
     """Copy missing notebooks only; retain existing files, edits and subdirectories.
 
-    The phase-1 baseline notebook will be added in step 1.7. Historical notebooks
+    The phase-1 baseline notebook is included for explicit execution in step 1.8. Historical notebooks
     are opt-in and are installed under legacy/, never mixed into the baseline.
     """
     source = resources.files('pynq_acoustic_camera.data').joinpath('notebooks')
@@ -53,7 +53,7 @@ def main():
     print('Installed: {}; existing files preserved: {}'.format(
         len(report['installed']), len(report['preserved'])))
     if not report['installed']:
-        print('No new notebooks copied. The baseline notebook is prepared in step 1.7.')
+        print('No new notebooks copied; existing files were preserved.')
     return 0
 
 
