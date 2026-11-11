@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Verify the installed distribution outside its checkout; no real FPGA access."""
 import argparse
+import ast
 import copy
 import hashlib
 from importlib import metadata, resources
@@ -60,6 +61,8 @@ class DistributionChecks(unittest.TestCase):
         self.assertIn('name', json.loads(data.joinpath('profiles').joinpath('active_buzzer_profile.json').read_text()))
         notebook = json.loads(data.joinpath('notebooks').joinpath('01_baseline.ipynb').read_text())
         self.assertEqual(notebook['nbformat'], 4)
+        for cell in notebook['cells']:
+            if cell['cell_type'] == 'code': ast.parse(''.join(cell['source']))
         self.assertTrue(all(c.get('execution_count') is None and not c.get('outputs')
                             for c in notebook['cells'] if c['cell_type'] == 'code'))
 
