@@ -16,7 +16,12 @@ _LAZY = {
         'AngleOfArrivalEstimator', 'DifferentialDopplerTracker', 'TimeOfArrivalEstimator')
 }
 _LAZY.update({'HardwareTrigger': '.hw_trigger', 'MicrophoneArrayOverlay': '.array',
-              'KinematicsDashboard': '.kinematics_dashboard'})
+              'KinematicsDashboard': '.kinematics_dashboard',
+              'PdmCandidate': '.pdm_candidate',
+              'PdmCandidateLoader': '.pdm_candidate',
+              'PdmCandidateIntegrityError': '.pdm_candidate',
+              'PdmClockControl': '.pdm_control', 'PdmIdentity': '.pdm_control',
+              'PdmInterfaceError': '.pdm_control', 'PdmIdentityError': '.pdm_control'})
 
 
 def __getattr__(name):
