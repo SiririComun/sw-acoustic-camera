@@ -9,7 +9,7 @@ from typing import Optional
 import numpy as np
 import pytest
 
-from pynq_localizer.kinematics import KinematicAnalytics, AngleOfArrivalEstimator
+from pynq_acoustic_camera.kinematics import KinematicAnalytics, AngleOfArrivalEstimator
 
 
 def generate_synthetic_aoa_stereo_frame(

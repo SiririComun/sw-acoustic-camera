@@ -9,7 +9,7 @@ from typing import Optional, Tuple, Dict, Any
 import numpy as np
 import pytest
 
-from pynq_localizer.kinematics import KinematicAnalytics, TimeOfArrivalEstimator
+from pynq_acoustic_camera.kinematics import KinematicAnalytics, TimeOfArrivalEstimator
 
 def generate_synthetic_2d_stereo_frame(
     x_m: float,

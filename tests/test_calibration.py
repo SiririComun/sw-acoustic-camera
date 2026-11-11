@@ -7,7 +7,7 @@ import tempfile
 from pathlib import Path
 import numpy as np
 import pytest
-from pynq_localizer.kinematics import (
+from pynq_acoustic_camera.kinematics import (
     AcousticCalibrationProtocol,
     AcousticProfile,
     DistanceEstimator,

@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "loadable": true,
+  "repository": "SiririComun/hw-acoustic-camera",
+  "release_tag": "v0.1.0-rc.2",
+  "board": "pynq_z2",
+  "part": "xc7z020clg400-1",
+  "overlay_name": "pynq_z2",
+  "top": "xadc_wrapper",
+  "manifest_file": "build-manifest.json",
+  "manifest_sha256": "0d372c66a798cedcc4420caf800c612d34c7720a40f1480620c9809d9d421571",
+  "expected_source_commit": "50b98d0ea8863c8cd8665fb6061b8cfb39222e0b",
+  "expected_interface_id": "legacy-xadc-reference/1",
+  "expected_build_id_128": null,
+  "files": {
+    "bit": "pynq_z2.bit",
+    "hwh": "pynq_z2.hwh"
+  }
+}

@@ -1,5 +1,5 @@
 """
-pynq_localizer.kinematics: High-Precision Acoustic Kinematics, Doppler Tracking & Metrology Engine.
+pynq_acoustic_camera.kinematics: High-Precision Acoustic Kinematics, Doppler Tracking & Metrology Engine.
 Provides sub-Hertz pitch tracking (20 Hz - 20 kHz), spectral quadruple extraction (f, A, φ, t),
 hybrid dual-DMA coherent in-band demodulation, multi-source tracking, dual-channel metric distance
 estimation (r = k_A / A and r = sqrt(k_E / E)), dual-channel acoustic profile modeling, quasi-anechoic

@@ -4,7 +4,7 @@ tests/test_multisource.py: Verification Suite for MultiSourceTracker & Harmonic 
 
 import numpy as np
 import pytest
-from pynq_localizer.kinematics import MultiSourceTracker
+from pynq_acoustic_camera.kinematics import MultiSourceTracker
 
 def generate_multi_tone_polar_frame(
     tones: list,

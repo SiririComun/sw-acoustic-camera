@@ -1,5 +1,5 @@
 """
-pynq_localizer.array: Core Dual-Microphone Hardware Interface & Lock-Step Polar Streaming Engine.
+pynq_acoustic_camera.array: Core Dual-Microphone Hardware Interface & Lock-Step Polar Streaming Engine.
 Features zero-skew simultaneous sampling (A0 & A1), hardware anti-aliasing decimation (M=1, 10, 20, 50),
 32-bit polar CORDIC phase-magnitude spectral capture, hybrid dual-DMA BFP-immune demodulation,
 sub-microsecond hardware timestamping, quasi-anechoic direct-pulse gating, dual-channel metric ranging,
@@ -19,8 +19,8 @@ except (ImportError, ModuleNotFoundError):
     Overlay = object
     allocate = None
 
-from pynq_localizer.loader import HardwareLoader
-from pynq_localizer.hw_trigger import HardwareTrigger
+from pynq_acoustic_camera.loader import HardwareLoader
+from pynq_acoustic_camera.hw_trigger import HardwareTrigger
 
 
 class MicrophoneArrayOverlay(Overlay):
@@ -40,16 +40,31 @@ class MicrophoneArrayOverlay(Overlay):
         bitfile_name: Optional[Union[str, Path]] = None,
         version: Optional[str] = None,
         n_fft: int = 2048,
+        initialize_legacy: bool = False,
         **kwargs
     ):
         """
         Initializes the dual-microphone hardware overlay.
         Auto-fetches the pinned hardware bitstream if bitfile_name is None.
         """
-        if bitfile_name is None:
-            resolved_bit = str(HardwareLoader.get_overlay_path(version=version))
-        else:
-            resolved_bit = str(Path(bitfile_name).resolve())
+        if not initialize_legacy:
+            raise ValueError(
+                'This inherited driver writes XADC/DMA registers and primes captures. '
+                'Use HardwareLoader.load_overlay() for phase-1 generic loading; '
+                'initialize_legacy=True explicitly opts into the unvalidated legacy workflow.'
+            )
+        if allocate is None:
+            raise RuntimeError('PYNQ is required for the legacy XADC driver')
+        config = HardwareLoader.get_hardware_config()
+        if config['expected_interface_id'] != 'legacy-xadc-reference/1':
+            raise ValueError('Legacy XADC driver cannot initialize another interface')
+        detected_board = HardwareLoader.get_board_name()
+        if detected_board != config['board']:
+            raise ValueError('Confirm BOARD=pynq_z2 before using the legacy driver')
+        pinned_path = HardwareLoader.get_overlay_path(version=version)
+        if bitfile_name is not None and Path(bitfile_name).resolve() != pinned_path.resolve():
+            raise ValueError('Legacy driver accepts only the verified pinned cache path')
+        resolved_bit = str(pinned_path)
 
         super().__init__(resolved_bit, **kwargs)
 
@@ -236,7 +251,7 @@ class MicrophoneArrayOverlay(Overlay):
         """
         High-level capture method returning the hybrid BFP-immune quadruple (f0, A_true, phi, t).
         """
-        from pynq_localizer.kinematics import KinematicAnalytics
+        from pynq_acoustic_camera.kinematics import KinematicAnalytics
 
         frame = self.capture_spectral_frame(fft_source=source, timeout=timeout)
         time_sig = frame["v_a0"] if ("A0" in source.upper() or "CH1" in source.upper()) else frame["v_a1"]
@@ -285,7 +300,7 @@ class MicrophoneArrayOverlay(Overlay):
         Captures a simultaneous dual-channel audio frame (0.00 µs skew via DMA 0)
         and computes the incident acoustic Angle of Arrival (AoA) bearing angle θ.
         """
-        from pynq_localizer.kinematics import AngleOfArrivalEstimator, KinematicAnalytics
+        from pynq_acoustic_camera.kinematics import AngleOfArrivalEstimator, KinematicAnalytics
 
         frame = self.capture_spectral_frame(
             fft_source="A0",
@@ -348,7 +363,7 @@ class MicrophoneArrayOverlay(Overlay):
           • Dual-channel metric distance inversions via Amplitude (k_A/A) and Energy (sqrt(k_E/E))
           • Pre-trigger RMS noise floors and dynamic Signal-to-Noise Ratios (SNR)
         """
-        from pynq_localizer.kinematics import KinematicAnalytics, AcousticProfile
+        from pynq_acoustic_camera.kinematics import KinematicAnalytics, AcousticProfile
 
         c_sound = KinematicAnalytics.speed_of_sound(temperature_c)
 
@@ -774,7 +789,7 @@ class MicrophoneArrayOverlay(Overlay):
           • Instantaneous acceleration a(t), position x(t), dynamic in-band amplitudes (A1, A2),
             common-mode carrier drift f0(t), aerodynamic drag γ, and bumper restitution e.
         """
-        from pynq_localizer.kinematics import DifferentialDopplerTracker, KinematicAnalytics
+        from pynq_acoustic_camera.kinematics import DifferentialDopplerTracker, KinematicAnalytics
 
         # 1. Capture continuous stereo stream directly to DDR
         t_raw, v_a0, v_a1 = self.record_continuous(duration_sec=duration_sec, chunk_size=chunk_size)
@@ -897,7 +912,7 @@ class MicrophoneArrayOverlay(Overlay):
         **kwargs
     ):
         """Launches the real-time rolling Multi-Tab Kinematics Dashboard."""
-        from pynq_localizer.kinematics_dashboard import KinematicsDashboard
+        from pynq_acoustic_camera.kinematics_dashboard import KinematicsDashboard
         dash = KinematicsDashboard(
             overlay=self,
             window_duration_sec=window_duration_sec,

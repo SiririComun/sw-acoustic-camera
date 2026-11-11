@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
 import numpy as np
-from pynq_localizer.array import MicrophoneArrayOverlay
-from pynq_localizer.kinematics import KinematicAnalytics
+from pynq_acoustic_camera.array import MicrophoneArrayOverlay
+from pynq_acoustic_camera.kinematics import KinematicAnalytics
 
 # 1. Instantiate overlay mock
 ol = MicrophoneArrayOverlay.__new__(MicrophoneArrayOverlay)

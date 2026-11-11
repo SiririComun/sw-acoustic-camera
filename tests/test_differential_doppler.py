@@ -9,7 +9,7 @@ from typing import Optional, Tuple
 import numpy as np
 import pytest
 
-from pynq_localizer.kinematics import KinematicAnalytics, DifferentialDopplerTracker
+from pynq_acoustic_camera.kinematics import KinematicAnalytics, DifferentialDopplerTracker
 
 
 def generate_synthetic_doppler_stereo_frame(

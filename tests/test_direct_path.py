@@ -6,8 +6,8 @@ Metrology, Hardware Energy Accumulator, and Zero-Intercept 1/r Regressions.
 import math
 import numpy as np
 import pytest
-from pynq_localizer.hw_trigger import HardwareTrigger
-from pynq_localizer.kinematics import KinematicAnalytics, DirectPulseCalibrationProtocol
+from pynq_acoustic_camera.hw_trigger import HardwareTrigger
+from pynq_acoustic_camera.kinematics import KinematicAnalytics, DirectPulseCalibrationProtocol
 
 
 class MockTriggerMMIO:
@@ -249,7 +249,7 @@ class TestDirectPathMetrology:
         """
         import tempfile
         from pathlib import Path
-        from pynq_localizer.kinematics import DistanceEstimator, AcousticProfile
+        from pynq_acoustic_camera.kinematics import DistanceEstimator, AcousticProfile
 
         f0 = 2609.73
         k_true = 0.0480  # 0.0480 V*m (48 mV at 1.0 m)

@@ -21,7 +21,7 @@ except (ImportError, ModuleNotFoundError):
     MMIO = None
     _IS_PYNQ = False
 
-from pynq_localizer.hw_trigger import HardwareTrigger
+from pynq_acoustic_camera.hw_trigger import HardwareTrigger
 
 
 class MockMMIO:
@@ -141,7 +141,7 @@ def verify_live_hardware():
     print("🔌 RUNNING LIVE HARDWARE VERIFICATION (PYNQ-Z2)")
     print("=" * 78)
 
-    from pynq_localizer import MicrophoneArrayOverlay
+    from pynq_acoustic_camera import MicrophoneArrayOverlay
     ol = MicrophoneArrayOverlay()
     trig = ol.trigger
 

@@ -4,7 +4,7 @@ tests/test_hybrid.py: Strict Verification Suite for Hybrid Dual-DMA Inference En
 
 import numpy as np
 import pytest
-from pynq_localizer.kinematics import (
+from pynq_acoustic_camera.kinematics import (
     KinematicAnalytics,
     AcousticProfile,
     DistanceEstimator,

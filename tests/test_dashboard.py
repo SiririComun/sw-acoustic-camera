@@ -6,8 +6,8 @@ import tempfile
 from pathlib import Path
 import numpy as np
 import pytest
-from pynq_localizer.kinematics import AcousticProfile, DistanceEstimator
-from pynq_localizer.kinematics_dashboard import KinematicsDashboard
+from pynq_acoustic_camera.kinematics import AcousticProfile, DistanceEstimator
+from pynq_acoustic_camera.kinematics_dashboard import KinematicsDashboard
 
 class TestKinematicsDashboard:
 

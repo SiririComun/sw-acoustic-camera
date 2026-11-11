@@ -1,5 +1,5 @@
 """
-pynq_localizer.kinematics_dashboard: Multi-Tab Real-Time Kinematics & Distance Dashboard.
+pynq_acoustic_camera.kinematics_dashboard: Multi-Tab Real-Time Kinematics & Distance Dashboard.
 Features 3-row telemetry display (In-Band Amplitude [mV], Pitch [Hz], and Metric Distance [cm]),
 2048-point STFT resolution, moving median DSP smoothing, BFP-immune coherent demodulation,
 clean non-NaN CSV exports, and direct Python data handoff for curve fitting.
@@ -21,14 +21,14 @@ try:
 except (ImportError, ModuleNotFoundError):
     allocate = None
 
-from pynq_localizer.kinematics import (
+from pynq_acoustic_camera.kinematics import (
     KinematicAnalytics,
     AcousticProfile,
     DistanceEstimator,
 )
 
 try:
-    from pynq_localizer.hw_trigger import HardwareTrigger
+    from pynq_acoustic_camera.hw_trigger import HardwareTrigger
 except (ImportError, ModuleNotFoundError):
     HardwareTrigger = None
 
@@ -137,7 +137,7 @@ class KinematicsDashboard:
             self.estimator = DistanceEstimator(k_constant=0.0196, noise_gate_v=0.003)
 
         # 2. Angle of Arrival Estimator Initialization
-        from pynq_localizer.kinematics import AngleOfArrivalEstimator
+        from pynq_acoustic_camera.kinematics import AngleOfArrivalEstimator
         p_cand = Path("profiles/active_buzzer_profile.json") if Path("profiles/active_buzzer_profile.json").exists() else Path("profiles/active_buzzer_2610hz.json")
         if aoa_estimator is not None:
             self.aoa_estimator = aoa_estimator
@@ -153,7 +153,7 @@ class KinematicsDashboard:
             )
 
         # 3. Differential Doppler Tracker Initialization
-        from pynq_localizer.kinematics import DifferentialDopplerTracker
+        from pynq_acoustic_camera.kinematics import DifferentialDopplerTracker
         if doppler_tracker is not None:
             self.doppler_tracker = doppler_tracker
         elif p_cand.exists():

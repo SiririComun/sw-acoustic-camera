@@ -1,5 +1,5 @@
 """
-pynq_localizer.hw_trigger: High-Level Driver for FPGA 'axis_trigger_unit' IP.
+pynq_acoustic_camera.hw_trigger: High-Level Driver for FPGA 'axis_trigger_unit' IP.
 Acts as the central Timing & Configuration Controller for Triggering, Decimation,
 FFT configuration, Hardware Active Buzzer Pulse Generation, Hardware-Accelerated
 100 MHz ToA / TDOA Cycle-Accurate Counters, and Quasi-Anechoic Direct-Path Energy Gating.

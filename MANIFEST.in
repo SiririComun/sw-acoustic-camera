@@ -1,0 +1,2 @@
+include README.md
+recursive-include pynq_acoustic_camera/data *.json *.ipynb *.md

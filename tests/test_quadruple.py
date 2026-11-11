@@ -4,7 +4,7 @@ tests/test_quadruple.py: Strict Unit Verification Suite for Quadruple (f, A, φ,
 
 import numpy as np
 import pytest
-from pynq_localizer.kinematics import KinematicAnalytics
+from pynq_acoustic_camera.kinematics import KinematicAnalytics
 
 def generate_synthetic_polar_frame(
     f_target: float = 1000.0,
