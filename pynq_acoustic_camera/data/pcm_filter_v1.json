@@ -1,0 +1,182 @@
+{
+  "filter_id": "mp34dt01-pdm-2p4m-r5-cic3-fir61-r10-v1",
+  "fixed_point": {
+    "clip_count": "increment once for each saturated channel sample in an accepted block",
+    "coefficient_quantization_l1_error": 16.281536064115187,
+    "coefficient_quantization_output_error_bound_dbfs": -102.4046898009739,
+    "coefficient_quantization_output_error_bound_lsb": 63.59975025044995,
+    "fir_accumulator_absolute_bound": 268581000,
+    "fir_accumulator_bits": 32,
+    "fir_coefficient_bits": 18,
+    "fir_coefficient_formula": "round_even(h[k] * 2^(23+5) / 125)",
+    "fir_coefficient_fractional_bits": 5,
+    "fir_coefficient_sha256_le_i32": "b883f094c06ee223d4c95e4bab4510d6cde5df3d889835c9c42488d1daa00d59",
+    "fir_coefficient_sum": 2147484,
+    "fir_coefficient_sum_target": 2147484,
+    "fir_coefficients": [
+      -291,
+      184,
+      377,
+      719,
+      1236,
+      1960,
+      2932,
+      4191,
+      5775,
+      7720,
+      10054,
+      12800,
+      15969,
+      19560,
+      23561,
+      27945,
+      32669,
+      37678,
+      42901,
+      48255,
+      53648,
+      58976,
+      64133,
+      69010,
+      73499,
+      77497,
+      80910,
+      83656,
+      85669,
+      86896,
+      87306,
+      86896,
+      85669,
+      83656,
+      80910,
+      77497,
+      73499,
+      69010,
+      64133,
+      58976,
+      53648,
+      48255,
+      42901,
+      37678,
+      32669,
+      27945,
+      23561,
+      19560,
+      15969,
+      12800,
+      10054,
+      7720,
+      5775,
+      4191,
+      2932,
+      1960,
+      1236,
+      719,
+      377,
+      184,
+      -291
+    ],
+    "fir_coefficients_symmetric": true,
+    "minimum_signed_accumulator_bits_for_bound": 30,
+    "output_rounding": "round_to_nearest_ties_to_even_after division by 2^5",
+    "output_saturation_range": [
+      -8388608,
+      8388607
+    ],
+    "pcm_format": "signed_24_in_signed_32",
+    "pcm_fractional_bits": 23,
+    "pcm_rounding_error_bound_lsb": 0.5
+  },
+  "input": {
+    "bit_mapping": {
+      "0": -1,
+      "1": 1
+    },
+    "channel_count": 4,
+    "nominal_rate_hz": 2400000,
+    "sampling_event": "one shared sample event for all four PDM bits"
+  },
+  "limitations": [
+    "Response and alias figures are dense-grid numerical measurements, not a formal continuous-frequency proof.",
+    "The exact microphone suffix and modulator noise transfer function are unconfirmed; this budget covers filter arithmetic quantization, not the sensor's shaped PDM quantization noise.",
+    "Acoustic sensitivity, clock-pin waveform, and electrical I/O margins are outside this digital design analysis."
+  ],
+  "response": {
+    "combined_attenuation_45_47khz_db": 74.11337287540442,
+    "combined_dc_gain": 1.0000001639127731,
+    "combined_dc_gain_error_db": 1.4237281410129492e-06,
+    "combined_passband_ripple_0_3khz_db": 0.5911775343824274,
+    "fir_passband_ripple_0_3khz_db": 0.5892811412325472,
+    "fir_stopband_minimum_attenuation_24_240khz_db": 69.58482312143617,
+    "highband_grid_points": 1000001,
+    "highband_grid_spacing_hz": 1.1759999999994761,
+    "method": "frequency response of quantized coefficients; CIC response multiplied by FIR response after first-stage frequency folding",
+    "minimum_alias_attenuation_into_1_3khz_db": 70.02920572025135,
+    "minimum_sampled_attenuation_for_all_input_frequencies_24khz_to_pdm_nyquist_db": 69.76354392681756,
+    "numpy_version": "2.5.2",
+    "scipy_version": "1.18.1",
+    "worst_sampled_highband_input_hz": 29537.784,
+    "worst_useful_alias": {
+      "fold": 1,
+      "pcm_frequency_hz": 1165.0,
+      "pdm_frequency_hz": 49165.0,
+      "side": 1
+    }
+  },
+  "schema": "pdm-pcm-filter/1.0",
+  "stages": [
+    {
+      "arithmetic": "two_complement_modulo_2^32; no internal rounding",
+      "comb_bits": 32,
+      "dc_gain": 125,
+      "decimation": 5,
+      "decimation_phase": "emit after PDM sample indices 4, 9, 14, ...",
+      "differential_delay": 1,
+      "input_rate_hz": 2400000,
+      "integrator_bits": 32,
+      "order": 3,
+      "output_bits": 8,
+      "output_bound": [
+        -125,
+        125
+      ],
+      "output_rate_hz": 480000,
+      "type": "CIC_decimator",
+      "unity_dc_normalization": "included in final FIR coefficient scale"
+    },
+    {
+      "decimation": 10,
+      "decimation_phase": "emit after CIC frame indices 9, 19, 29, ...",
+      "design_method": "SciPy signal.remez, weights [1, 100], then unity-DC normalization",
+      "input_rate_hz": 480000,
+      "output_rate_hz": 48000,
+      "passband_hz": [
+        0,
+        3000
+      ],
+      "stopband_hz": [
+        24000,
+        240000
+      ],
+      "taps": 61,
+      "transition_band_hz": [
+        3000,
+        24000
+      ],
+      "type": "linear_phase_equiripple_FIR_decimator"
+    }
+  ],
+  "status": "designed_offline_not_yet_implemented",
+  "timing": {
+    "common_channel_phase": true,
+    "filter_settle_frames": 6,
+    "first_pcm_output_pdm_sample_index": 49,
+    "group_delay_pcm_frames": 3.12,
+    "group_delay_pdm_samples": 156,
+    "group_delay_seconds": 6.5e-05,
+    "pcm_output_phase": "PDM sample indices 49, 99, 149, ...",
+    "pcm_rate_hz": 48000,
+    "settling_rule": "discard PCM output indices 0..5 after reset; output index 6 is the first with 61 full CIC samples, each with complete CIC history",
+    "total_decimation": 50
+  }
+}
