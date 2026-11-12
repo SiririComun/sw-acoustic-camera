@@ -23,3 +23,7 @@ until successful recovery and CLEAR. START of a block must not restart filter
 settling; stopping the PDM clock must reset it. The FIFO admits complete frames,
 then emits channel words in order with a final-word-only TLAST. Error handling
 must reject whole blocks, including any partial DMA payload.
+
+Step4.5 implements this API/metadata interface and packaged notebook04 with local
+verification. Details: [PCM_CAPTURE.md](PCM_CAPTURE.md). Candidate BIT/HWH pinning
+still waits for the real4.6 build; source constants are not artifact hashes.

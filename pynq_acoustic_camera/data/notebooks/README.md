@@ -17,3 +17,9 @@ initialization have not been validated against the new release. They are exclude
 from the default notebook installation. Use `--include-legacy` only deliberately;
 the legacy driver now requires `initialize_legacy=True` before it configures XADC,
 DMA and triggers. These notebooks are not four-channel PDM examples.
+
+`04_pcm_capture.ipynb` is prepared in4.5 for later authorized board runs. All
+hardware flags default toFalse, outputs are cleared and BIT/HWH hashes are unset
+until the4.6 candidate. It attaches without FPGA programming and prepares RAW
+wiring activity, PCM patterns, tone/level measurements, identity and six-pair
+delays. Read PCM_CAPTURE.md before enabling a physical session.

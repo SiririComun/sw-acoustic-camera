@@ -1,0 +1,113 @@
+{
+  "schema": "phase4-step5-software-verification/1.0",
+  "step": "4.5",
+  "status": "pass",
+  "evidence_directory": "evidence/phase-04-step-05/run-20261112T230832Z-6843a452",
+  "pcm_host_checks": {
+    "scope": "host_models_and_offline_analysis_only",
+    "tests": 17,
+    "failures": 0,
+    "errors": 0,
+    "result": "pass"
+  },
+  "raw_regression": {
+    "scope": "host_models_only_not_hardware",
+    "tests": 7,
+    "failures": 0,
+    "errors": 0,
+    "result": "pass"
+  },
+  "wheel": {
+    "path": "evidence/phase-04-step-05/run-20261112T230832Z-6843a452/dist/pynq_acoustic_camera-0.1.0rc1-py3-none-any.whl",
+    "sha256": "7cfbdbd275179094cf55608330a52b8cdf8c35b87e66ceb0d65bf4a9ac4b974e",
+    "size_bytes": 174398,
+    "packaged_source_bytes_verified": [
+      "pynq_acoustic_camera/pcm_capture.py",
+      "pynq_acoustic_camera/pcm_analysis.py",
+      "pynq_acoustic_camera/data/pcm_filter_v1.json",
+      "pynq_acoustic_camera/data/notebooks/04_pcm_capture.ipynb",
+      "pynq_acoustic_camera/data/notebooks/README.md"
+    ],
+    "installed": false
+  },
+  "api": {
+    "module": "pynq_acoustic_camera.pcm_capture",
+    "entry_point": "pynq_acoustic_camera.AcousticArray",
+    "raw_dispatch_capabilities": "0xB",
+    "pcm_capabilities": "0xF",
+    "pcm_format": "pcm_s24_in_s32",
+    "pcm_dtype": "int32",
+    "pcm_shape": "(N,4)",
+    "pcm_bytes_per_frame": 16,
+    "max_frames": 65536,
+    "default_capture_timeout": "max(2 seconds,10*N/fs_nominal)",
+    "physical_pcm_waits_filter_ready": true,
+    "pattern_bypasses_filter_ready": true,
+    "startup_samples_discarded_again_by_software": 0
+  },
+  "analysis": {
+    "tone_tests_hz": [
+      1000,
+      2000,
+      3000
+    ],
+    "frequency_tolerance_percent": 2,
+    "peak_minimum_over_neighbor_floor_db": 10,
+    "neighbor_floor": "median bin power 500..5000 Hz excluding +/-100 Hz around peak; mean removal and Hann",
+    "delay_pairs": 6,
+    "delay_test_shifts_samples": [
+      0,
+      3,
+      -2,
+      1
+    ],
+    "delay_method": "1..3 kHz normalized correlation with integer lag"
+  },
+  "notebook": {
+    "resource": "pynq_acoustic_camera/data/notebooks/04_pcm_capture.ipynb",
+    "hardware_flags_default": false,
+    "execution_outputs_cleared": true,
+    "default_cells_executed_locally": true,
+    "programs_fpga": false,
+    "candidate_bit_hwh_hashes": null,
+    "installation_preserves_user_edits_verified": true
+  },
+  "checks": [
+    "five PCM pattern sizes through65536 frames",
+    "signed24 extremes and clip counts",
+    "RAW on both0xB and0xF hardware models",
+    "DMA armed beforeSTART; exactbytes/words; detachedarray",
+    "badidentity/constants/arguments rejected before writes",
+    "HWH DMA length/width and HP0 validation before MMIO writes",
+    "filter readiness read-only timeout and pattern bypass",
+    "short block, badcounter, badsign, badclips, DMA/overflow/timeout recovery",
+    "failedreset retains buffer and blocksreuse",
+    "clock/config/filter preserved by transport recovery",
+    "known-tone/silence/lag analysis and safenotebookdefaults"
+  ],
+  "source_sha256": {
+    "pynq_acoustic_camera/pcm_capture.py": "6057bcc09104fbf3b73e306fcbe45bcbb587050741dd67c1730585c8e482a4ce",
+    "pynq_acoustic_camera/pcm_analysis.py": "1ea40dd7bbe258b7fd30751ab58c88629e5203a8a50187776d57efa7eb44bfbd",
+    "pynq_acoustic_camera/__init__.py": "90e994dfd5158c9eb6d97fdfd0dd670b94a2be2910115c1e03e0c9382eda269c",
+    "pynq_acoustic_camera/raw_capture.py": "3df8a02371dbf36be4efd7777c7b156085b19f15b79dcf78651094ff761f59e1",
+    "pynq_acoustic_camera/pdm_control.py": "54345f24b90e4ec0bc5993677bee1d2d5f4aa61317ab036858c9a8563f76f52e",
+    "pynq_acoustic_camera/notebooks.py": "7fc57a3e325a7e8e7569816265f9f37137ab96712a2d9e60fbc3ab5709f7e01c",
+    "pynq_acoustic_camera/data/pcm_filter_v1.json": "a3ad95a1669d5e57cd9a4a66e9552f0a08976d4b54b71496c3cc8581c6a79e7c",
+    "pynq_acoustic_camera/data/notebooks/04_pcm_capture.ipynb": "76549e55b6d1a4eefeccd35a6e554b8ae9171bdbec28e7486c03c03f07221bea",
+    "tools/verify_pcm_capture.py": "09a7d6d2240d79244d920d56e920a928e0c06d846afabdff9c0a4bf86055060a",
+    "tools/verify_raw_capture.py": "16cd54a0c306d1dc4aaac5336a49536c57da6c99fe28d9513907a6f47d4028e0",
+    "setup.py": "b0184ed4b87a68b4c82f449c061075b18dad85101d6fab19b1982def7a297288",
+    "pyproject.toml": "7f4d920bc75d4e2c9f5e73f3215b4a4bcc3f52f4f641de3a2a28d8b6b3d03b9f",
+    "MANIFEST.in": "ff206a00a43fa53d1eda27f6c33577c828d01dd9b4feae20167ce3349f045210",
+    "pynq_acoustic_camera/data/notebooks/README.md": "00886363fac03966d0aa98df41c6ff6d81ef9c32f4a2b82d5c1ddc46dc1a1fa6"
+  },
+  "limitations": [
+    "MMIO, DMA and allocations are host models; no real DDR transfer or board evidence",
+    "wheel built and inspected, not installed",
+    "BIT/HWH hashes and verified candidate loading remain step4.6/board work",
+    "acoustic levels/delays not yet measured on microphones"
+  ],
+  "bitstream_generated": false,
+  "board_accessed": false,
+  "new_packages_installed": false
+}

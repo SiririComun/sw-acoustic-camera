@@ -16,6 +16,7 @@ _LAZY = {
         'AngleOfArrivalEstimator', 'DifferentialDopplerTracker', 'TimeOfArrivalEstimator')
 }
 _LAZY.update({name: '.raw_capture' for name in ('AcousticArray', 'RawCaptureResult', 'RawCaptureError')})
+_LAZY.update({name: '.pcm_capture' for name in ('AcousticArray', 'CaptureResult', 'CaptureError')})
 _LAZY.update({'HardwareTrigger': '.hw_trigger', 'MicrophoneArrayOverlay': '.array',
               'KinematicsDashboard': '.kinematics_dashboard',
               'PdmCandidate': '.pdm_candidate',
