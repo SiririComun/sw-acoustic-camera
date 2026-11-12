@@ -41,3 +41,16 @@ The generator was run to create the checked-in JSON. No unit tests, RTL
 simulation, synthesis, bitstream, or hardware run were performed in step 4.2.
 The next step can implement the RTL against this frozen coefficient table and
 compare it to the reference model.
+
+## Step 4.3 digital verification
+
+`tools/phase4_pcm_vectors.py` generates deterministic four-channel PDM vectors
+and checks the stateful reference against an independent direct CIC FIR13
+convolution plus FIR61. It also verifies the RTL output trace. Eight sequences
+check DC/integrator wraps, identical and distinct channels, impulses, synthetic
+tones/images, and restart with sample-enable gaps. All 1,850 vectors / 7,400
+channel samples match exactly, including six startup exclusions, channel clip
+masks and readiness. The suite includes 354 rounding/saturation boundary cases,
+MAC latency assertions, mid-MAC reset and overload/recovery in the VHDL bench.
+See [phase4-step3-verification.json](phase4-step3-verification.json) for hashes
+and counts. Hardware integration and acoustic evidence are still pending.

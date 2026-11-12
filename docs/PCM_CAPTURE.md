@@ -1,6 +1,7 @@
 # PCM capture (phase 4)
 
-Status: steps 4.1 and 4.2 complete; PCM RTL, the PCM capture API and notebook
+Status: steps 4.1–4.3 complete; standalone PCM filter RTL matches the integer
+reference in XSim. The PCM capture API and notebook
 `04_pcm_capture.ipynb` are not implemented yet. The frozen filter design and
 integer reference are documented in [PCM_FILTER_DESIGN.md](PCM_FILTER_DESIGN.md).
 

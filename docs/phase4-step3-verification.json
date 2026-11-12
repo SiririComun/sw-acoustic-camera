@@ -1,0 +1,123 @@
+{
+  "step": "4.3",
+  "status": "pass",
+  "simulator": "XSim 2024.2.2",
+  "evidence_directory": "evidence/phase-04-step-03/run-20261112T222940Z-f3150c44",
+  "vectors": {
+    "cases": [
+      {
+        "id": 1,
+        "name": "positive_dc_integrator_wrap",
+        "pdm_frames": 30000,
+        "pcm_frames": 600,
+        "accepted_frames": 594,
+        "clipped_channel_samples": 2376
+      },
+      {
+        "id": 2,
+        "name": "negative_dc",
+        "pdm_frames": 4000,
+        "pcm_frames": 80,
+        "accepted_frames": 74,
+        "clipped_channel_samples": 296
+      },
+      {
+        "id": 3,
+        "name": "identical_random",
+        "pdm_frames": 8000,
+        "pcm_frames": 160,
+        "accepted_frames": 154,
+        "clipped_channel_samples": 0
+      },
+      {
+        "id": 4,
+        "name": "distinct_random",
+        "pdm_frames": 10000,
+        "pcm_frames": 200,
+        "accepted_frames": 194,
+        "clipped_channel_samples": 0
+      },
+      {
+        "id": 5,
+        "name": "channel_impulses",
+        "pdm_frames": 4500,
+        "pcm_frames": 90,
+        "accepted_frames": 84,
+        "clipped_channel_samples": 0
+      },
+      {
+        "id": 6,
+        "name": "pdm_tones_and_alias_image",
+        "pdm_frames": 25000,
+        "pcm_frames": 500,
+        "accepted_frames": 494,
+        "clipped_channel_samples": 0
+      },
+      {
+        "id": 7,
+        "name": "identical_tone",
+        "pdm_frames": 10000,
+        "pcm_frames": 200,
+        "accepted_frames": 194,
+        "clipped_channel_samples": 0
+      },
+      {
+        "id": 8,
+        "name": "reset_then_short_capture_with_ce_gaps",
+        "pdm_frames": 1000,
+        "pcm_frames": 20,
+        "accepted_frames": 14,
+        "clipped_channel_samples": 0
+      }
+    ],
+    "pcm_frames": 1850,
+    "accepted_frames": 1802,
+    "rounding_cases": 354,
+    "independent_check": "direct CIC FIR13 convolution then FIR61, compared to modular reference",
+    "coefficients_sha256_le_i32": "b883f094c06ee223d4c95e4bab4510d6cde5df3d889835c9c42488d1daa00d59"
+  },
+  "verification": {
+    "status": "pass",
+    "frames_checked": 1850,
+    "samples_checked": 7400,
+    "accepted_clipped_channel_samples": 2672,
+    "trace_sha256": "1de31a04ece96e220f9461c112df4e713513bc64f6cf0ca8ec74f5a719493c75"
+  },
+  "inputs": [
+    {
+      "name": "pcm_filter_v1.json",
+      "sha256": "a3ad95a1669d5e57cd9a4a66e9552f0a08976d4b54b71496c3cc8581c6a79e7c"
+    },
+    {
+      "name": "acoustic_pcm_filter_pkg.vhd",
+      "sha256": "7c06bdfc43d0e6fdc3536fa04d65d1a301d499aba062bede5ae9ab82a2a50a38"
+    },
+    {
+      "name": "acoustic_pdm_pcm_filter.vhd",
+      "sha256": "8f224954bc44893cf5f9e355923c7bbd00aafdff3804aa46b80f3460812d27ed"
+    },
+    {
+      "name": "tb_pdm_pcm_filter.vhd",
+      "sha256": "d802e205b83255f80428741908da6e8cf9094b3847976357a5a36d349e367e18"
+    },
+    {
+      "name": "pcm_fixed_reference.py",
+      "sha256": "d2ee40a9799693820b7567670300946451928208aaf464202710e6eb16c3ef6f"
+    },
+    {
+      "name": "phase4_pcm_vectors.py",
+      "sha256": "1900a81fc2b52b17488250debb59a1d9bb5d72ce3c9773739a47b37bfb116297"
+    }
+  ],
+  "runner_sha256": "f56b757ab5dab3336a5f860d9025cb665a41894e1446a91cb213310a503ade7f",
+  "checks": [
+    "244-clock MAC latency and common output phase",
+    "six-frame startup exclusion",
+    "354 rounding/saturation cases",
+    "reset during MAC cancels output",
+    "sticky overrun fails closed and recovers on reset"
+  ],
+  "synthesis_run": false,
+  "bitstream_generated": false,
+  "board_accessed": false
+}
