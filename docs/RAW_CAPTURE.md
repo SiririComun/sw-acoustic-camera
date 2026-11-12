@@ -26,7 +26,7 @@ sequence for a diagnostic abort. A failed reset prevents reuse and retains any
 buffer that DMA could still own; reload a verified overlay before a new session.
 
 Notebook `03_raw_capture.ipynb` defaults to no hardware execution. Candidate
-hashes are intentionally unset until step 3.5. Its pattern run prepares five
+hashes are pinned to the reviewed local step-3.5 pair. Its pattern run prepares five
 sizes × ten repetitions with data/metadata evidence. Keep microphones disconnected
 until the physical instructions of step 3.6. No notebook cells ran in step 3.4.
 
