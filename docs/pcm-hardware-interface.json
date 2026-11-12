@@ -1,0 +1,87 @@
+{
+  "schema": "acoustic-camera-pcm-hardware-interface/1.0",
+  "status": "phase4_rtl_interface_no_bitstream",
+  "contract_id": "acoustic-camera-capture/1.0",
+  "build_id_128": "B691CC9C9F6249AD938D2063E4767C54",
+  "magic": "0x4143414D",
+  "abi_version": "0x00010000",
+  "capabilities": "0x0000000F",
+  "channels": 4,
+  "control_ip": "acoustic_capture_0",
+  "dma_ip": "axi_dma_audio",
+  "bd": "pdm_pcm_capture",
+  "pdm_clock_hz": 2400000,
+  "pcm_rate_hz": 48000,
+  "decimation": 50,
+  "warmup_cycles": 48000,
+  "filter_settle_frames": 6,
+  "filter_id": "mp34dt01-pdm-2p4m-r5-cic3-fir61-r10-v1",
+  "coefficients_sha256_le_i32": "b883f094c06ee223d4c95e4bab4510d6cde5df3d889835c9c42488d1daa00d59",
+  "dma": {
+    "mode": "simple_s2mm",
+    "stream_bits": 32,
+    "memory_master_bits": 32,
+    "ps_hp0_bits": 64,
+    "length_bits": 23,
+    "tkeep": 15,
+    "tlast": "last word only",
+    "maximum_frames": 65536
+  },
+  "fifo": {
+    "depth_frames": 2048,
+    "stored_bits_per_frame": 129,
+    "atomic_admission": true,
+    "raw_frames_capacity": 2048,
+    "pcm_payload_words_capacity": 8192
+  },
+  "formats": {
+    "0": {
+      "name": "RAW_PDM",
+      "words_per_frame": 1,
+      "numpy_dtype": "uint32",
+      "numpy_shape": "(N,)"
+    },
+    "1": {
+      "name": "PCM_S24_IN_S32",
+      "words_per_frame": 4,
+      "numpy_dtype": "int32",
+      "numpy_shape": "(N,4)"
+    }
+  },
+  "pattern": {
+    "raw": "n",
+    "pcm": "16*n+c",
+    "index_reset": "accepted START",
+    "requires_clock_ready": true,
+    "requires_filter_ready": false
+  },
+  "physical_pcm": {
+    "requires_filter_ready": true,
+    "normalization": "sample / 2**23",
+    "rounding": "nearest_ties_even",
+    "saturation_bits": 24,
+    "channel_order": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "filter_reset": "clock stop/restart or global reset; not block START or DMA-local reset"
+  },
+  "registers": {
+    "FORMAT": "0x30",
+    "SOURCE": "0x34",
+    "N_FRAMES": "0x38",
+    "PCM_RATE_HZ": "0x44",
+    "DECIMATION": "0x48",
+    "CLIP_COUNT": "0x58",
+    "FILTER_SETTLE_FRAMES": "0x60",
+    "STATUS_FILTER_READY_BIT": 4
+  },
+  "distribution": {
+    "bitstream": null,
+    "hwh": null,
+    "loadable_candidate": false,
+    "planned_build_step": "4.6"
+  }
+}

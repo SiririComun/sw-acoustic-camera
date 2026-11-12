@@ -1,0 +1,103 @@
+{
+  "step": "4.4",
+  "status": "pass",
+  "vivado_version": "2024.2.2",
+  "build_id_128": "B691CC9C9F6249AD938D2063E4767C54",
+  "stream": {
+    "evidence_directory": "evidence/phase-04-step-04/run-20261112T224204Z-297109f0",
+    "successful_cases": {
+      "1": 4,
+      "2": 8,
+      "3": 68,
+      "4": 16384,
+      "5": 262144,
+      "6": 68,
+      "7": 68,
+      "8": 8,
+      "9": 68,
+      "10": 4,
+      "11": 4,
+      "12": 1,
+      "13": 2,
+      "14": 17,
+      "15": 4096,
+      "16": 65536,
+      "17": 17
+    },
+    "words_checked": 348497,
+    "fifo_configured_depth_frames": 2048,
+    "overflow_observed_produced_frames": 2049,
+    "pcm_max_frames": 65536,
+    "raw_max_frames": 65536,
+    "large_pcm_pattern_test": "CE accelerated x10; actual nominal CE/10 verified on physical PCM and native-clock top",
+    "checks": [
+      "pattern equality and channel ordering",
+      "TKEEP and one final TLAST",
+      "stalled final word delays DONE",
+      "overflow and local recovery",
+      "abort after channel0 handshake with channel1 stalled",
+      "physical PCM clips counted per channel",
+      "RAW physical and pattern compatibility",
+      "configuration errors and global reset"
+    ]
+  },
+  "registers_and_native_clock": {
+    "evidence_directory": "evidence/phase-04-step-04/run-20261112T224116Z-cf9f23aa",
+    "successful_captures": 5,
+    "words_checked": 165,
+    "checks": [
+      "real MMCM/divider and 48000-cycle warmup",
+      "identity, ABI, capabilities and PCM RO registers",
+      "independent AW/W and held B/R channels",
+      "WSTRB and malformed accesses",
+      "physical START rejected until FILTER_READY",
+      "pattern ignores FILTER_READY",
+      "busy configuration rejected without mutation",
+      "DMA-local stream reset preserves errors and filter readiness",
+      "clock disable drops clock/filter ready"
+    ]
+  },
+  "bd": {
+    "evidence_directory": "evidence/phase-04-step-04/bd-validation-20261112T224253Z",
+    "validated": true,
+    "control_module": "acoustic_pdm_pcm_control",
+    "control_ip": "acoustic_capture_0",
+    "dma_ip": "axi_dma_audio",
+    "dma_length_bits": 23,
+    "dma_stream_and_memory_master_bits": 32,
+    "ps_hp0_bits": 64,
+    "clock_hz": 100000000,
+    "dma_primary_reset_connected_to_local_stream_reset": true,
+    "external_reset_low_active_verified": true,
+    "aux_reset_high_active_verified": true,
+    "bd_sha256": "40f8ccb6be80e597422272a63e3d48e2352322238da04f6884c71c9f49ccd7fc"
+  },
+  "scope_limits": [
+    "DMA-to-DDR not simulated; primary stream reset emulated in testbench",
+    "XDC target coverage and routed timing/resource validation pending step 4.6",
+    "no BIT/HWH candidate or board operations"
+  ],
+  "warnings_review": [
+    "XPM SIM_ASSERT_CHK is enabled intentionally",
+    "missing legacy XADC IP/source warnings concern the read-only PS template, not the new control module",
+    "negative PS DDR skew values inherited from accepted PYNQ configuration; preserve for board/build review",
+    "C_EXT_RESET_HIGH read-only warning: effective active-low value asserted by Tcl",
+    "initial missing FREQ_HZ warning resolved by propagation; saved module clock=100000000",
+    "AXI-Lite SmartConnect low-area mode does not support WRAP; control traffic uses single transfers",
+    "BD replay requires module sources; generation script explicitly adds them"
+  ],
+  "simulation_reports_sha256": {
+    "evidence/phase-04-step-04/run-20261112T224204Z-297109f0": "12e4eca400bc2a0c6eb17668976a0db2571d5e1a5d08a337ff6f8138b11a477d",
+    "evidence/phase-04-step-04/run-20261112T224116Z-cf9f23aa": "74dffb5737636c0cd2a45aa7019b1b7b7fd891f670f770329c31326059cff5e9"
+  },
+  "source_sha256": {
+    "scripts/create_pdm_pcm_capture_bd.tcl": "6df98de3a7e996c1d3ece18f50c0b800677e722fb07976e29fa41978a6b22eba",
+    "scripts/simulate_pdm_pcm_capture.py": "ec4e41874491625edfa871a905519e3a404cf17a80cbd9c31f93c5abf2cf8dd4",
+    "src/con/pynq_z2_pcm.xdc": "9c55bca24b38537cd68d141de9a919ac7d96e76ba79357ffc1e48e05c3da2bd0",
+    "src/con/pynq_z2_pcm_timing.xdc": "3ca46274a4312d79e0c707c0bdeb843967fa6a0af094c2d5f5bb3715addde20b"
+  },
+  "synthesis_run": false,
+  "implementation_run": false,
+  "bitstream_generated": false,
+  "board_accessed": false
+}

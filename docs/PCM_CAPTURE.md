@@ -1,7 +1,7 @@
 # PCM capture (phase 4)
 
-Status: steps 4.1–4.3 complete; standalone PCM filter RTL matches the integer
-reference in XSim. The PCM capture API and notebook
+Status: steps 4.1–4.4 complete; filter and integrated capture/control RTL passed
+native XSim, and Vivado validated the separate DMA BD. The PCM capture API and notebook
 `04_pcm_capture.ipynb` are not implemented yet. The frozen filter design and
 integer reference are documented in [PCM_FILTER_DESIGN.md](PCM_FILTER_DESIGN.md).
 
@@ -24,3 +24,13 @@ shape, byte count and transport, not the physical microphone or decimator. The
 filter's independent fixed-point reference and hardware equivalence belong to
 the filter-design and digital-verification steps. The notebook will provide
 repeatable capture analysis and preserve each run's report and data.
+
+## Hardware integration target
+
+Step 4.4 freezes the next hardware interface in
+[PCM_HARDWARE_INTERFACE.md](PCM_HARDWARE_INTERFACE.md) and
+[pcm-hardware-interface.json](pcm-hardware-interface.json). The new BUILD_ID
+differs from phase 3. No PCM BIT/HWH exists yet. Digital integration results
+and provenance are in [phase4-step4-verification.json](phase4-step4-verification.json).
+Step 4.5 can implement the API/notebook against this source interface and local
+fakes; step 4.6 will generate and pin the hardware candidate before board use.
