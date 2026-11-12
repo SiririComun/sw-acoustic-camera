@@ -5,7 +5,7 @@
 implementation. The accepted RAW loader/candidate and notebook03 remain intact.
 Construction is read-only. `from_overlay` attaches to an already loaded and
 hash-verified BIT/HWH pair, validates HWH DMA settings/HP0 and hardware identity,
-and never programs the FPGA. A PCM pair does not exist yet; it will be built in4.6.
+and never programs the FPGA. The local PCM pair was built and reviewed in4.6; real-board acceptance remains pending.
 
 ```python
 from pynq_acoustic_camera import AcousticArray, CaptureError
@@ -64,7 +64,7 @@ pure tones can be ambiguous and a boundary lag needs review.
 
 Packaged `04_pcm_capture.ipynb` defaults to all hardware flags false and has no
 outputs. It attaches to an already loaded pair after hash verification and has
-**no FPGA download call**. BIT/HWH hashes remain `None` until4.6. Prepared runs:
+**no FPGA download call**. BIT/HWH hashes now pin the actual4.6 build; `data/pcm_candidate.json` also pins its manifest and HW source commit. Prepared runs:
 brief RAW activity check of restored wiring, five pattern sizes×10, ten physical
 48000-frame blocks, separate tone sessions, channel identity and six-pair delays.
 Every enabled session preserves samples/metadata and an error report, then
@@ -79,5 +79,14 @@ and notebook bytes matched the sources; no package was installed. Host models
 cannot verify actual DMA-to-DDR transfer, microphone timing or acoustic quality.
 See [phase4-step5-verification.json](phase4-step5-verification.json) for hashes
 and evidence paths, [PCM_HARDWARE_INTERFACE.md](PCM_HARDWARE_INTERFACE.md) for the
-source interface, and the hardware note for integration results. Next4.6 builds
-and pins the actual candidate before board use.
+source interface, and the hardware note for integration results. See `phase4-step6-verification.json` for the built candidate. The next authorized
+board step will install/program explicitly and verify the real transport.
+
+Read-only candidate preflight from this checkout:
+
+```bash
+python tools/verify_pcm_candidate.py /path/to/candidate
+```
+
+This compares the manifest and BIT/HWH to packaged pins and the notebook defaults.
+It imports no PYNQ and never programs the FPGA. No hardware flag is enabled by default.

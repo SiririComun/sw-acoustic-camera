@@ -257,7 +257,11 @@ class PackagingChecks(unittest.TestCase):
             if cell['cell_type']=='code':
                 self.assertIsNone(cell['execution_count']);self.assertEqual(cell['outputs'],[])
                 exec(compile(''.join(cell['source']),str(path)+':cell'+str(index),'exec'),namespace)
-        self.assertFalse(namespace['RUN_HARDWARE']);self.assertIsNone(namespace['EXPECTED_BIT_SHA256'])
+        self.assertFalse(namespace['RUN_HARDWARE'])
+        for name in ('EXPECTED_BIT_SHA256', 'EXPECTED_HWH_SHA256'):
+            self.assertRegex(namespace[name], r'^[0-9a-f]{64}$')
+        for name in ('RUN_RAW_CHECK', 'RUN_PATTERN', 'RUN_ACOUSTICS'):
+            self.assertFalse(namespace[name])
         with tempfile.TemporaryDirectory() as folder:
             report=install_notebooks(folder)
             self.assertIn('04_pcm_capture.ipynb',report['installed'])

@@ -1,0 +1,20 @@
+{
+  "build_id": "b691cc9c9f6249ad938d2063e4767c54",
+  "hw_commit": "744e54a9946b2dc0db2b397bc7d6e198a1077f56",
+  "part": "xc7z020clg400-1",
+  "top": "pdm_pcm_capture_wrapper",
+  "artifacts": [
+    {
+      "path": "pdm_pcm_capture.bit",
+      "size_bytes": 4045685,
+      "sha256": "5b7b14e34d9372302132746d9ad24475c4df9a1c66f06236ace752b439e91cf2"
+    },
+    {
+      "path": "pdm_pcm_capture.hwh",
+      "size_bytes": 261719,
+      "sha256": "fc757a78ae638b88eea46fa9a75a0fa67ecdaa09c2599aec19732102bdc9824f"
+    }
+  ],
+  "manifest_sha256": "5e7c2f3f4d16e9df5e6b5a5bd895c9ecc723498973038f920247746f096a64f4",
+  "status": "local_candidate_board_acceptance_pending"
+}

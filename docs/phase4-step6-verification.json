@@ -1,0 +1,67 @@
+{
+  "phase": 4,
+  "step": "4.6",
+  "status": "complete_local_candidate_board_acceptance_pending",
+  "hw_source_commit": "744e54a9946b2dc0db2b397bc7d6e198a1077f56",
+  "build_id": "b691cc9c9f6249ad938d2063e4767c54",
+  "candidate_manifest": "evidence/phase-04-step-06/candidate/candidate-manifest.json",
+  "candidate_manifest_sha256": "5e7c2f3f4d16e9df5e6b5a5bd895c9ecc723498973038f920247746f096a64f4",
+  "artifacts": [
+    {
+      "path": "pdm_pcm_capture.bit",
+      "size_bytes": 4045685,
+      "sha256": "5b7b14e34d9372302132746d9ad24475c4df9a1c66f06236ace752b439e91cf2"
+    },
+    {
+      "path": "pdm_pcm_capture.hwh",
+      "size_bytes": 261719,
+      "sha256": "fc757a78ae638b88eea46fa9a75a0fa67ecdaa09c2599aec19732102bdc9824f"
+    }
+  ],
+  "vivado_version": "2024.2.2",
+  "part": "xc7z020clg400-1",
+  "top": "pdm_pcm_capture_wrapper",
+  "timing": {
+    "wns_ns": 2.422,
+    "whs_ns": 0.029,
+    "wpws_ns": 3.0,
+    "failing_setup_endpoints": 0,
+    "failing_hold_endpoints": 0,
+    "data_setup_min_slack_ns": 22.158,
+    "data_hold_min_slack_ns": 3.93,
+    "data_requirement_ns": 125.0,
+    "no_input_delay": 0,
+    "unconstrained_internal_endpoints": 0,
+    "bus_skew_min_slack_ns": 9.018,
+    "drc_bitgen_errors": 0
+  },
+  "resources": {
+    "slice_luts": 7231,
+    "slice_luts_pct": 13.59,
+    "slice_registers": 8739,
+    "slice_registers_pct": 8.21,
+    "block_ram_tiles": 8.5,
+    "block_ram_pct": 6.07,
+    "dsps": 1
+  },
+  "constraint_endpoint_counts": {
+    "samples": 4,
+    "snapshot": 68,
+    "configuration": 34,
+    "cdc_first": 9
+  },
+  "review": "evidence/phase-04-step-06/review.json",
+  "evidence": "evidence/phase-04-step-06",
+  "host_verification": {
+    "pinned_candidate_preflight": "pass",
+    "modified_notebook_defaults_and_preserved_install_copy": "pass",
+    "altered_manifest_BIT_HWH_temporary_copies": "rejected",
+    "raw_preservation": "pass",
+    "api_model_tests": "unchanged;17 PCM +7 RAW passed in4.5, not repeated in4.6"
+  },
+  "board_accessed": false,
+  "phase_accepted": false,
+  "publication": "local commits; push only at phase4 closure",
+  "next": "4.7: explicit board installation/programming, brief restored-wiring RAW check, PCM transport patterns and error recovery; physical acoustic acceptance follows authorized steps",
+  "pdf": "Actual Vivado block design PDF due at phase4 closure for accepted candidate"
+}
