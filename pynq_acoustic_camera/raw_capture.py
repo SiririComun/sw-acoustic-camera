@@ -68,6 +68,10 @@ class AcousticArray:
         for key, expected in required.items():
             if int(str(params[key]), 0) != expected:
                 raise PdmIdentityError('Unexpected DMA parameter: ' + key)
+        ps = ips['processing_system7_0']['parameters']
+        ps = {key.lower(): value for key, value in ps.items()}
+        if int(str(ps['c_s_axi_hp0_data_width']), 0) != 64:
+            raise PdmIdentityError('PYNQ image requires HP0 configured for 64-bit data')
         if not overlay.is_loaded():
             raise PdmIdentityError('Overlay is not loaded')
         from pynq import MMIO, allocate

@@ -32,3 +32,8 @@ until the physical instructions of step 3.6. No notebook cells ran in step 3.4.
 
 Host verification: `python3 tools/verify_raw_capture.py`; this uses fake MMIO and
 allocations, not PYNQ. Actual memory transfer and recovery still require 3.5.
+
+The loaded HWH must also describe PS HP0 at 64 bits, matching official PYNQ boot
+configuration. DMA and RAW AXI Stream stay 32 bits; SmartConnect converts to HP0.
+The board pattern rejected the first HP0=32 candidate. from_overlay now rejects
+that mismatch before control writes. Corrected candidate receives a new BUILD_ID.

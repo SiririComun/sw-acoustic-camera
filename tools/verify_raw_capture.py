@@ -105,6 +105,17 @@ class RawDriverChecks(unittest.TestCase):
         self.assertEqual(h.log, [])
         self.assertEqual(h.buffers, [])
 
+    def test_reject_hp0_width_mismatch_before_pynq_import_or_writes(self):
+        class Overlay:
+            ip_dict = {
+                'acoustic_capture_0': {},
+                'axi_dma_audio': {'parameters': {'c_include_sg': 0, 'c_include_mm2s': 0,
+                    'c_include_s2mm': 1, 'c_sg_length_width': 23, 'c_addr_width': 32,
+                    'c_m_axi_s2mm_data_width': 32, 'c_s_axis_s2mm_tdata_width': 32}},
+                'processing_system7_0': {'parameters': {'C_S_AXI_HP0_DATA_WIDTH': 32}}}
+        with self.assertRaisesRegex(PdmIdentityError, 'HP0'):
+            AcousticArray.from_overlay(Overlay(), BUILD)
+
     def test_busy_and_not_ready_before_writes(self):
         for status in (3, 0):
             h = Hardware(); h.reg[0x28] = status; a = self.driver(h)
