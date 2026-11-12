@@ -17,10 +17,10 @@ class PdmCandidateIntegrityError(ValueError):
     """The candidate manifest, BIT/HWH pair or PDM identity is incompatible."""
 
 
-_EXPECTED_BUILD_ID = 'b3f22d7ae0844695ad24ee1e24ff9ca0'
-_EXPECTED_BIT_SHA256 = '6d0197d636f53169931fa26bb3b2ef6c0e59457166a998def09d3247e6edc5d0'
-_EXPECTED_HWH_SHA256 = 'e04547331973c393c34121e41bf08df394178668c03a76e22080b12329f94901'
-_EXPECTED_SOURCE_COMMIT = 'f5a88ec95621f7a1967690b92c7481b8fdc6fb8c'
+_EXPECTED_BUILD_ID = '710bf4adefe94edab8e0ab42a5138648'
+_EXPECTED_BIT_SHA256 = '9fd66b9cea4eb7bc7a8c7a5ba0f1baf4be7d25df6d281d5db9c98bbef5325bf7'
+_EXPECTED_HWH_SHA256 = '2edb08e0243ff66b624e323a3be25900c859ddb88b2a983b5aab89d2b03df3c5'
+_EXPECTED_SOURCE_COMMIT = 'bbfa3abb13154fbe61dc5d1bd5b677f439fd09d2'
 _EXPECTED_IP_INSTANCE = 'acoustic_capture_0'
 _EXPECTED_IP_BASE = 0x43C00000
 _EXPECTED_PART = 'xc7z020clg400-1'
@@ -75,6 +75,39 @@ def _artifact_path(folder, record, expected_name, maximum):
     if actual != digest:
         _fail('Candidate artifact hash differs from its manifest: ' + expected_name)
     return path, actual
+
+
+def _validate_reset_wiring(root):
+    """Reject the stuck-reset topology before FPGA programming or MMIO."""
+    modules = {m.get('INSTANCE'): m for m in root.findall('.//MODULE')}
+    reset = modules.get('rst_ps7_0_100M')
+    if reset is None or reset.get('MODTYPE') != 'proc_sys_reset':
+        _fail('Missing PDM reset controller')
+    params = {p.get('NAME'): p.get('VALUE')
+              for p in reset.findall('./PARAMETERS/PARAMETER')}
+    if params.get('C_AUX_RESET_HIGH') != '1' or params.get('C_EXT_RESET_HIGH') != '0':
+        _fail('Unsafe PDM reset polarity; auxiliary reset must be inactive at zero')
+    for port_name, instance, source_port, value in [
+        ('aux_reset_in', 'constant_reset_low', 'dout', 0),
+        ('mb_debug_sys_rst', 'constant_reset_low', 'dout', 0),
+        ('dcm_locked', 'constant_locked', 'dout', 1),
+        ('ext_reset_in', 'processing_system7_0', 'FCLK_RESET0_N', None),
+    ]:
+        port = reset.find("./PORTS/PORT[@NAME='%s']" % port_name)
+        connections = [] if port is None else port.findall('./CONNECTIONS/CONNECTION')
+        if (len(connections) != 1 or connections[0].get('INSTANCE') != instance
+                or connections[0].get('PORT') != source_port):
+            _fail('Unexpected PDM reset connection: ' + port_name)
+        if value is not None:
+            constant = modules.get(instance)
+            params = {} if constant is None else {
+                p.get('NAME'): p.get('VALUE') for p in constant.findall('./PARAMETERS/PARAMETER')}
+            try:
+                actual = int(params.get('CONST_VAL', ''), 0)
+            except ValueError:
+                _fail('Invalid reset constant: ' + instance)
+            if actual != value:
+                _fail('Active or unlocked PDM reset constant: ' + instance)
 
 
 @dataclass(frozen=True)
@@ -133,7 +166,7 @@ class PdmCandidate:
 
 
 class PdmCandidateLoader:
-    """Validate only the exact phase-2 step-2.8 BIT/HWH candidate."""
+    """Validate only the exact phase-2 reset-corrected BIT/HWH candidate."""
 
     @classmethod
     def prepare(cls, manifest_path):
@@ -144,10 +177,10 @@ class PdmCandidateLoader:
         artifacts = manifest.get('artifacts')
         if not isinstance(build, dict) or not isinstance(artifacts, list):
             _fail('Candidate manifest is missing build or artifact records')
-        if (manifest.get('schema_version') != 1 or manifest.get('step') != '2.8'
+        if (manifest.get('schema_version') != 1 or manifest.get('step') != '2.10-reset-correction'
                 or manifest.get('artifact_kind') !=
                 'local PDM phase-2 candidate; not a release and not board-validated'):
-            _fail('Manifest is not the phase-2 step-2.8 PDM candidate')
+            _fail('Manifest is not the phase-2 reset-corrected PDM candidate')
         if (build.get('bitstream_generated') is not True or build.get('board_programmed') is not False
                 or build.get('microphones_connected') is not False):
             _fail('Candidate manifest records an unexpected physical/build state')
@@ -155,7 +188,7 @@ class PdmCandidateLoader:
                 or build.get('part') != _EXPECTED_PART or build.get('top') != _EXPECTED_TOP
                 or str(build.get('build_id_128', '')).lower() != _EXPECTED_BUILD_ID
                 or build.get('control_ip_instance') != _EXPECTED_IP_INSTANCE):
-            _fail('Candidate build identity does not match the reviewed step-2.8 candidate')
+            _fail('Candidate build identity does not match the reviewed reset-corrected candidate')
         try:
             base_address = int(build.get('control_ip_base_address'), 0)
         except (TypeError, ValueError) as exc:
@@ -177,12 +210,13 @@ class PdmCandidateLoader:
             path.parent, matches['pdm_clock_control.hwh'][0], 'pdm_clock_control.hwh',
             _MAX_HWH_BYTES)
         if bit_hash != _EXPECTED_BIT_SHA256 or hwh_hash != _EXPECTED_HWH_SHA256:
-            _fail('Candidate BIT/HWH hashes differ from the reviewed step-2.8 pair')
+            _fail('Candidate BIT/HWH hashes differ from the reviewed reset-corrected pair')
 
         try:
             root = ET.fromstring(hwh_path.read_bytes())
         except (OSError, ET.ParseError) as exc:
             raise PdmCandidateIntegrityError('Invalid candidate HWH XML') from exc
+        _validate_reset_wiring(root)
         if root.tag != 'EDKSYSTEM':
             _fail('Candidate HWH does not have an EDKSYSTEM root')
         modules = [item for item in root.findall('.//MODULE')
