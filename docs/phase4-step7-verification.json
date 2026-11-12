@@ -1,0 +1,73 @@
+{
+  "phase": 4,
+  "step": "4.7",
+  "status": "complete_board_digital_pass_acoustic_pending",
+  "hw_source_commit": "744e54a9946b2dc0db2b397bc7d6e198a1077f56",
+  "installed_sw_source_commit": "b50502c036d8af6410493aaf44eb4b493808e183",
+  "runner_source_commit": "809d95fff0f9dd9358ebc9eec73ddd67353b85ca",
+  "build_id": "b691cc9c9f6249ad938d2063e4767c54",
+  "candidate_manifest_sha256": "5e7c2f3f4d16e9df5e6b5a5bd895c9ecc723498973038f920247746f096a64f4",
+  "wheel_sha256": "95ce24835f2bd68655ecb0df8468e8b7a1be964eaa42aa56c9b6b1b0c161d3f0",
+  "board_hostname": "LaZ2",
+  "pynq_version": "3.1.1",
+  "board_attempt": "evidence/phase-04-step-07/run-20261112T233235Z-173042ec",
+  "board_review": "evidence/phase-04-step-07/board-evidence-review.json",
+  "board_review_sha256": "1fd4f48dfde13a331fe826e7067aa79f6506300157a2da089984cb0f71f0b5f3",
+  "raw_frames": 4096,
+  "raw_channels": [
+    {
+      "channel": 0,
+      "ones": 2592,
+      "zeros": 1504,
+      "transitions": 2628
+    },
+    {
+      "channel": 1,
+      "ones": 2563,
+      "zeros": 1533,
+      "transitions": 2651
+    },
+    {
+      "channel": 2,
+      "ones": 2589,
+      "zeros": 1507,
+      "transitions": 2609
+    },
+    {
+      "channel": 3,
+      "ones": 2581,
+      "zeros": 1515,
+      "transitions": 2636
+    }
+  ],
+  "pattern_blocks": 50,
+  "pattern_frames": 696520,
+  "pattern_samples": 2786080,
+  "pattern_bytes": 11144320,
+  "sizes": [
+    1,
+    2,
+    17,
+    4096,
+    65536
+  ],
+  "repetitions_per_size": 10,
+  "diagnostics": [
+    "arguments_identity",
+    "busy_write",
+    "abort",
+    "timeout",
+    "format_switch",
+    "reprogram_reset",
+    "clock_final"
+  ],
+  "clock_final": "disabled",
+  "installed_package_files_verified": 33,
+  "downloaded_artifact_hashes_verified": 111,
+  "acoustics_run": false,
+  "phase4_accepted": false,
+  "accepted_RAW_lock_preserved": true,
+  "publication": "local commits; push only at phase4 closure",
+  "next": "4.8 physical PCM captures and acoustic checks under acceptance section D; requires source/speaker context and user coordination; no rewiring currently required",
+  "pdf": "Actual accepted-candidate Vivado BD PDF due at phase4 closure"
+}
