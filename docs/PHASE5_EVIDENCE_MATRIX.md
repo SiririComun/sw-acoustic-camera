@@ -1,9 +1,10 @@
-# Phase 5.1 — acceptance evidence matrix
+# Phase 5 — acceptance evidence matrix
 
 Reviewed 2026-11-13. Scope is criterion E in `context/ACCEPTANCE_PLAN.md`.
-Phase 5 is in progress; this matrix records existing evidence and the remaining
-campaign. The physical mapping and centered-source geometry deferred at phase 4
-remain out of scope.
+Phase 5 is in progress. Step 5.1 audited existing evidence; step 5.2 prepared
+the local runner and notebook. The physical campaign remains pending. The
+physical mapping and centered-source geometry deferred at phase 4 remain out of
+scope.
 
 ## Existing evidence against criterion E
 
@@ -14,6 +15,25 @@ remain out of scope.
 | Recovery after controlled abort and timeout | Phase 4.7 board diagnostics passed abort, recovery, timeout, and the following exact pattern capture. Reprogram/reset recovery also passed. | Covered by the accepted candidate-specific evidence. Do not repeat unless a relevant change or concrete failure gives a reason. |
 | Record block times and pauses between calls | Each of the 60 phase 4.8 per-block JSON files records host call start/end UTC. Grouped by the six sessions, call duration was min/median/P95/max `1.015301/1.016159/1.020173/1.023091 s`; 54 within-session pauses were `0.395545/0.414618/0.470826/0.476958 s`. P95 uses nearest-rank. | Partial baseline only. The 100-block campaign must record the same fields and report its own pauses. These are host call times, not acoustic timestamps. A pause between calls is reported separately; it is not evidence of a loss inside a completed block. No continuous acquisition is claimed. |
 | Start from a clean kernel and explicitly load the overlay | Phase 4.8 ran the installed notebook in a new kernel per session and explicitly programmed the verified BIT/HWH pair. The exact BUILD_ID and artifact hashes are in its run evidence. | Covered for the accepted candidate. Do not repeat as a standalone check absent a loader/boot change or a concrete failure. |
+
+## Step 5.2 software preparation
+
+Prepared locally on the phase-5 software branch. No board was accessed and no
+physical campaign result is implied.
+
+- `pynq_acoustic_camera/stability.py`: fixed 100 × 48,000-frame serial runner,
+  candidate identity/provenance checks, per-block sample and JSON persistence,
+  exact PCM/counter/status validation, no retries, stop on first failure,
+  timing summaries, clock cleanup record and evidence-storage preflight.
+- `pynq_acoustic_camera/data/notebooks/05_acquisition_stability.ipynb`:
+  package version `0.1.0rc2`, hash-pinned explicit overlay programming, and
+  `RUN_CAMPAIGN = False` by default.
+- `docs/PHASE5_SOFTWARE_RUNBOOK.md`: execution and evidence interpretation.
+
+Disposition: instrumentation is prepared; the required 100-block physical
+campaign remains pending for step 5.3. The pause metric includes host overhead
+between API calls and is explicitly not treated as lost samples inside a block
+or as proof of continuous acquisition.
 
 ## Evidence locations
 

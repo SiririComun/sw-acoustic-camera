@@ -23,3 +23,12 @@ hardware flags default toFalse, outputs are cleared and BIT/HWH hashes are unset
 until the4.6 candidate. It attaches without FPGA programming and prepares RAW
 wiring activity, PCM patterns, tone/level measurements, identity and six-pair
 delays. Read PCM_CAPTURE.md before enabling a physical session.
+
+`05_acquisition_stability.ipynb` prepares the phase-5 serial campaign of100
+physical PCM microphone blocks. `RUN_CAMPAIGN` defaults to`False`; enabling it
+verifies the approved BIT/HWH hashes, explicitly programs the pinned candidate,
+and records one report plus one metadata file per attempted block and one `.npy`
+per returned block. The runner stops on its first failure and does not retry.
+It reports API-call durations and finish-to-next-start pauses separately; those
+pauses are not losses inside completed captures and do not prove continuous
+acquisition. No geometric or microphone-mapping analysis is included.

@@ -4,7 +4,7 @@ from importlib import import_module
 from .loader import HardwareLoader, HardwareConfigError, HardwareIntegrityError, HardwareDownloadError
 from .notebooks import install_notebooks
 
-__version__ = '0.1.0rc1'
+__version__ = '0.1.0rc2'
 
 # Scientific routines and the explicitly opted-in XADC driver are retained from
 # the source project, without importing PYNQ/scientific/UI stacks on basic import.

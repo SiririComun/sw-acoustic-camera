@@ -10,7 +10,7 @@ resource_files = [p.relative_to(PACKAGE).as_posix()
 
 setup(
     name='pynq-acoustic-camera',
-    version='0.1.0rc1',
+    version='0.1.0rc2',
     author='Juan Pablo Sánchez (SiririComun)',
     description='Pinned overlay distribution for the PYNQ-Z2 acoustic camera',
     long_description=(ROOT / 'README.md').read_text(encoding='utf-8'),
