@@ -1,8 +1,8 @@
 # Phase 5 — acceptance evidence matrix
 
 Reviewed 2026-11-13. Scope is criterion E in `context/ACCEPTANCE_PLAN.md`.
-Phase 5 is in progress. Steps 5.1 and 5.2 audited/prepared the procedure, and
-step 5.3 completed the 100-block physical campaign. The
+Phase 5 is closed. Steps 5.1 and 5.2 audited/prepared the procedure, and step
+5.3 completed the 100-block physical campaign. The
 physical mapping and centered-source geometry deferred at phase 4 remain out of
 scope.
 
@@ -79,6 +79,8 @@ the campaign result and next phase action.
   `evidence/phase-05-step-03/board/launcher/`
 - Phase 5.3 post-transfer checksums: `docs/PHASE5_CAMPAIGN_AUDIT.json` and
   `evidence/phase-05-step-03/board-campaign-audit.json`
+- Phase 5 closeout PDF, actual Vivado Block Design export:
+  `evidence/phase-05-closeout/phase5-vivado-block-design.pdf`
 
 ## Campaign requirement
 
@@ -91,3 +93,6 @@ kernel check was repeated in this campaign.
 
 The accepted phase 3 RAW integration lock remains unchanged. Existing phase 4
 acceptance and the deferred geometry are not broadened by this matrix.
+
+Phase 5 closeout, branch publication and PDF provenance are recorded in
+`docs/PHASE5_CLOSURE.md` and `context/PHASE5_CLOSURE.md`.
