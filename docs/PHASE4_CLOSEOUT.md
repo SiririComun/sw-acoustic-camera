@@ -25,5 +25,6 @@ the centered, equidistant six-pair test passed. Both remain explicitly deferred.
 The accepted phase-3 RAW candidate and integration lock remain unchanged. Phase
 5 stability and later physical geometry work have not started.
 
-GitHub publication of this phase branch is authorized and prepared; it remains
-pending until SSH authentication succeeds for the account with write access.
+The `phase/04-pcm-capture` branch has been published to GitHub. The final
+remote commit IDs are recorded in the workspace closeout record. Phase-4
+functional acceptance and geometry deferral are documented above.
