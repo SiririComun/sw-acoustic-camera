@@ -1,0 +1,65 @@
+{
+  "schema": "acoustic-camera-pcm-hardware-interface/1.1-continuous-candidate",
+  "status": "phase7_local_candidate_board_acceptance_pending",
+  "contract_id": "acoustic-camera-capture/1.1-candidate",
+  "hardware_branch": "phase/07-continuous-pcm",
+  "hardware_commit": "c5d0ef32d28bf30624b9094fd6f87a244be505b7",
+  "build_id_128": "7A2C7F017A2C4E7D8F70070100000001",
+  "abi_version": "0x00010001",
+  "capabilities": "0x0000001F",
+  "channels": 4,
+  "control_ip": "acoustic_capture_0",
+  "dma_ip": "axi_dma_audio",
+  "pcm": {
+    "format": "PCM_S24_IN_S32",
+    "words_per_frame": 4,
+    "bytes_per_frame": 16,
+    "numpy_dtype": "int32",
+    "numpy_shape": "(frames,4)",
+    "channel_order": [0, 1, 2, 3],
+    "sample_rate_hz": 48000
+  },
+  "continuous_mode": {
+    "register": "0x64",
+    "value": 1,
+    "stop_command": "COMMAND 0x24 bit 3",
+    "packet_frames_register": "0x38",
+    "recommended_frames_per_descriptor": 4096,
+    "recommended_slot_count": 64,
+    "packet_bytes": 65536,
+    "queue_bytes": 4194304,
+    "queue_seconds_at_48khz": 5.4613333333,
+    "stop_behavior": "next complete packet boundary followed by stream drain"
+  },
+  "dma": {
+    "mode": "S2MM_scatter_gather_non_cyclic_tail_managed",
+    "stream_bits": 32,
+    "memory_master_bits": 32,
+    "descriptor_master_bits": 32,
+    "ps_hp0_bits": 64,
+    "length_bits": 23,
+    "descriptor_bytes": 64,
+    "descriptor_alignment_bytes": 64,
+    "buffer_alignment_bytes": 4,
+    "descriptor_status": {
+      "complete_bit": 31,
+      "rx_sof_bit": 27,
+      "rx_eof_bit": 26,
+      "transferred_bytes": "bits 22:0"
+    },
+    "cyclic_mode_bit": "S2MM_DMACR 0x30 bit 4; kept clear"
+  },
+  "snapshot_registers": {
+    "command": "0x78; write 0 to invalidate and 1 to capture",
+    "valid": "0x7C bit 0",
+    "frames_total_low_high": ["0x68", "0x6C"],
+    "words_total_low_high": ["0x70", "0x74"],
+    "final_invariant": "frames_total * 16 == words_total * 4 == bytes_received"
+  },
+  "ownership": {
+    "descriptor_and_slot_state": ["dma_owned", "cpu_owned", "dma_owned"],
+    "return_rule": "advance TAILDESC only after completion, cache invalidation, validation, and detached copy",
+    "exhaustion": "no slot reuse until returned; hardware FIFO overflow invalidates the capture"
+  },
+  "validation_scope": "host models only; no PYNQ-Z2 DMA, cache-coherency, or microphone capture evidence"
+}
