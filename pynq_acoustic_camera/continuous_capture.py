@@ -625,7 +625,8 @@ class ContinuousPcmCapture:
             # final descriptor writebacks are stable before inspecting them.
             self._dma.write(self.DMA_CR, 0)
             self._wait(lambda: bool(self._dma.read(self.DMA_SR) & self.DMA_HALTED),
-                       min(timeout, self._recovery_timeout), 'AXI DMA did not halt after STOP')
+                       max(0.0, deadline - time.monotonic()),
+                       'AXI DMA did not halt after STOP')
             self._check_health()
             self._drain_ready()
             counters = self._snapshot_health()
