@@ -178,22 +178,19 @@ def draw_marker(frame, sequence):
 
 
 def decode_marker(frame):
-    # Keep this as a view of the PYNQ DMA buffer. On this ARM image a full
-    # NumPy copy of the allocated frame can segfault; only scalar samples are
-    # read while the buffer is owned by the caller.
-    image = frame
+    # Keep this as a view of the PYNQ DMA buffer. The synchronous PYNQ
+    # readframe() path has already passed full-array statistics in the HDMI
+    # loopback smoke test. Avoid copying the DMA allocation.
+    image = np.asarray(frame)
     if image.ndim != 3 or image.shape[0] < 48 or image.shape[1] < 470:
         return None
     bits = []
     for index in range(MARKER_BITS):
         x0 = MARKER_X + index * MARKER_PITCH
-        # Sample the center of each solid marker cell. Avoid NumPy reductions
-        # over PYNQ DMA-backed frame views, which can fault on this ARM image.
-        sample_y = (MARKER_Y + 8, MARKER_Y + MARKER_CELL_H // 2,
-                    MARKER_Y + MARKER_CELL_H - 8)
-        sample_x = (x0 + 6, x0 + MARKER_CELL_W // 2, x0 + MARKER_CELL_W - 6)
-        total = sum(int(image[y, x, 0]) for y in sample_y for x in sample_x)
-        bits.append(int(total > 127 * len(sample_y) * len(sample_x)))
+        y0 = MARKER_Y + 4
+        y1 = MARKER_Y + MARKER_CELL_H - 4
+        x1 = x0 + MARKER_CELL_W
+        bits.append(int(float(image[y0:y1, x0:x1, 0].mean()) > 127))
     magic = 0
     sequence = 0
     for bit in bits[:4]:
@@ -292,6 +289,18 @@ def run_mode(fourcc, duration_s, video, preview_path=None):
     out_started = in_started = False
     capture_thread = None
     input_loop = None
+
+    def read_input_frame(timeout_s=3.0):
+        # Use the documented async Base API with a deadline so a missing HDMI
+        # frame is reported instead of leaving the process blocked forever.
+        try:
+            return input_loop.run_until_complete(
+                asyncio.wait_for(hdmi_in.readframe_async(), timeout=timeout_s)
+            )
+        except asyncio.TimeoutError:
+            rx_stats["read_timeouts"] += 1
+            raise
+
     try:
         input_loop = asyncio.new_event_loop()
         asyncio.set_event_loop(input_loop)
@@ -299,8 +308,23 @@ def run_mode(fourcc, duration_s, video, preview_path=None):
         hdmi_out.start()
         out_started = True
         trace(f"{fourcc}: HDMI OUT started")
-        # PYNQ VDMA starts with a blank framebuffer. Allow HDMI IN to lock
-        # before querying its mode, without an extra blocking writeframe.
+        # Match the known-good 6.2 startup: keep the output VDMA fed with
+        # several real frames before HDMI IN detects and starts capturing.
+        priming_frames_sent = 0
+        for _ in range(3):
+            ok, prime_frame = cap.read()
+            if not ok or prime_frame is None:
+                raise RuntimeError("C920 did not return an HDMI priming frame")
+            if prime_frame.shape[:2] != (HEIGHT, WIDTH):
+                raise RuntimeError(
+                    f"Unexpected C920 priming frame shape {prime_frame.shape}"
+                )
+            prime_out = hdmi_out.newframe()
+            np.asarray(prime_out)[...] = prime_frame
+            hdmi_out.writeframe(prime_out)
+            priming_frames_sent += 1
+        result["camera_priming_frames_sent"] = priming_frames_sent
+        trace(f"{fourcc}: sent {priming_frames_sent} C920 priming frames to HDMI OUT")
         time.sleep(0.5)
         trace(f"{fourcc}: configuring HDMI IN; waiting for receiver lock")
         hdmi_in.configure()
@@ -315,6 +339,10 @@ def run_mode(fourcc, duration_s, video, preview_path=None):
         hdmi_in.start()
         in_started = True
         trace(f"{fourcc}: HDMI IN started")
+        # PYNQ documents that the first frame after a long pause may be stale.
+        warmup_frame = read_input_frame()
+        warmup_frame.freebuffer()
+        trace(f"{fourcc}: discarded HDMI IN warm-up frame")
 
         def camera_worker():
             sequence = 0
@@ -338,13 +366,10 @@ def run_mode(fourcc, duration_s, video, preview_path=None):
                 capture_stats["frames"] = sequence
             capture_stats["end"] = time.monotonic()
 
-        def consume_input_frame(timeout_s=0.02):
-            # Run PYNQ's async VDMA wait on the main thread. Its interrupt
-            # waiter did not deliver frames reliably from a worker. Keep the
-            # timeout short so a stalled RX never prevents feeding HDMI OUT.
-            frame = input_loop.run_until_complete(
-                asyncio.wait_for(hdmi_in.readframe_async(), timeout=timeout_s)
-            )
+        def consume_input_frame():
+            # Use PYNQ's asynchronous Base API behind a bounded synchronous
+            # wait so a missing frame becomes a reportable timeout.
+            frame = read_input_frame()
             returned = time.monotonic()
             try:
                 shape = list(frame.shape)
@@ -413,8 +438,6 @@ def run_mode(fourcc, duration_s, video, preview_path=None):
                             sent.pop(sequence & 0xFFF, None)
             try:
                 consume_input_frame()
-            except asyncio.TimeoutError:
-                rx_stats["read_timeouts"] += 1
             except Exception as exc:
                 rx_stats["reader_error"] = f"{type(exc).__name__}: {exc}"
                 break
@@ -438,9 +461,7 @@ def run_mode(fourcc, duration_s, video, preview_path=None):
         drain_deadline = time.monotonic() + 1.0
         while time.monotonic() < drain_deadline:
             try:
-                consume_input_frame(timeout_s=0.02)
-            except asyncio.TimeoutError:
-                rx_stats["read_timeouts"] += 1
+                consume_input_frame()
             except Exception as exc:
                 rx_stats["reader_error"] = f"{type(exc).__name__}: {exc}"
                 break
@@ -476,6 +497,9 @@ def run_mode(fourcc, duration_s, video, preview_path=None):
             "hdmi_submit_fps": round(len(submitted_sequences) / max(result["output_elapsed_s"], 1e-9), 3),
             "hdmi_in_frames_read": rx["frames"],
             "hdmi_in_read_timeouts": rx["read_timeouts"],
+            "hdmi_in_read_behavior": (
+                "PYNQ asynchronous readframe with a 3-second per-frame deadline"
+            ),
             "hdmi_in_read_fps_measured": round((rx["frames"] - 1) / rx_elapsed, 3) if rx_elapsed else None,
             "hdmi_in_untagged_frames": rx["untagged"],
             "hdmi_in_repeated_tag_reads": rx["repeat_tags"],
