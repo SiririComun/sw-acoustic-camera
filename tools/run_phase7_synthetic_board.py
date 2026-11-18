@@ -337,6 +337,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--bit', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--source', type=Path,
+                        default=Path(__file__).resolve().parents[1] / 'src')
     parser.add_argument('--duration-seconds', type=int, default=30)
     parser.add_argument('--overload-stall-seconds', type=float, default=0.8)
     parser.add_argument('--hardware-commit', default='a9151b1ca4517d102aa5763f6e5ffcc2fa8f1d06')
@@ -344,7 +346,13 @@ def main():
     args = parser.parse_args()
     args.bit = args.bit.resolve()
     args.output = args.output.resolve()
+    args.source = args.source.resolve()
     args.output.mkdir(parents=True, exist_ok=True)
+    if not (args.source / 'pynq_acoustic_camera' / '__init__.py').is_file():
+        raise FileNotFoundError('Staged pynq_acoustic_camera source package is missing')
+    # Prefer the phase-7 driver staged beside this runner over an older package
+    # installed in the PYNQ image.
+    sys.path.insert(0, str(args.source))
 
     report = {
         'phase': 7,
@@ -359,6 +367,7 @@ def main():
         'candidate_hwh_sha256': sha256(args.bit.with_suffix('.hwh')),
         'hardware_commit': args.hardware_commit,
         'software_commit': args.software_commit,
+        'software_source': str(args.source),
         'requested_duration_seconds': args.duration_seconds,
         'runner_sha256': sha256(Path(__file__)),
         'python': sys.executable,
@@ -443,13 +452,18 @@ def main():
                     Path('/sys/class/fpga_manager/fpga0/state'),
                     Path('/sys/class/fpga_manager/fpga0/flags'))
                 base_restored = True
-                report['retained_dma_buffers_after_base_restore'] = inspect_retained_dma_buffers()
                 print('OFFICIAL_BASE_RESTORED', flush=True)
             except BaseException as restore_error:
                 report['base_restore_error'] = '{}: {}'.format(
                     type(restore_error).__name__, restore_error)
                 report['status'] = 'fail'
                 print('BASE_RESTORE_ERROR=' + report['base_restore_error'], flush=True)
+            if base_restored:
+                try:
+                    report['retained_dma_buffers_after_base_restore'] = inspect_retained_dma_buffers()
+                except BaseException as diagnostic_error:
+                    report['retained_dma_inspection_error'] = '{}: {}'.format(
+                        type(diagnostic_error).__name__, diagnostic_error)
         report['base_restored_ok'] = base_restored if candidate_load_attempted else None
         report['finished_utc'] = utc_now()
         save_json(status_path, report)
