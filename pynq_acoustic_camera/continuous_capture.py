@@ -219,8 +219,8 @@ class ContinuousPcmCapture:
             raise ContinuousCaptureError('A continuous capture session already owns the DMA',
                                          self._diagnostics())
 
-    def _diagnostics(self):
-        return {
+    def _diagnostics(self, *, include_sg=False):
+        diagnostics = {
             'capture_status': self._control.read(0x28),
             'error_flags': self._control.read(0x2C),
             'overflow_count': self._control.read(0x54),
@@ -231,6 +231,21 @@ class ContinuousPcmCapture:
             'bytes_received': self._bytes_received,
             'last_snapshot': dict(self._last_snapshot),
         }
+        if include_sg:
+            diagnostics.update({
+                'dma_current_descriptor': self._dma.read(self.DMA_CURDESC),
+                'dma_current_descriptor_msb': self._dma.read(self.DMA_CURDESC_MSB),
+                'dma_tail_descriptor': self._dma.read(self.DMA_TAILDESC),
+                'dma_tail_descriptor_msb': self._dma.read(self.DMA_TAILDESC_MSB),
+            })
+            if self._descriptor_root is not None:
+                self._descriptor_root.invalidate()
+                diagnostics['dma_descriptor_statuses'] = [
+                    int(descriptor[self.BD_STATUS]) for descriptor in self._descriptors]
+                diagnostics['dma_descriptors_first_4'] = [
+                    [int(word) for word in descriptor[:8]]
+                    for descriptor in self._descriptors[:4]]
+        return diagnostics
 
     def _check_health(self):
         diagnostics = self._diagnostics()
@@ -695,7 +710,7 @@ class ContinuousPcmCapture:
             self._release_buffers(safe=False)
 
     def _raise_after_recovery(self, message, cause):
-        diagnostics = self._diagnostics()
+        diagnostics = self._diagnostics(include_sg=True)
         diagnostics['cause'] = '{}: {}'.format(type(cause).__name__, cause)
         try:
             self._recover_hardware()
