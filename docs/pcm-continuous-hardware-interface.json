@@ -1,6 +1,6 @@
 {
   "schema": "acoustic-camera-pcm-hardware-interface/1.1-continuous-candidate",
-  "status": "phase7_local_candidate_board_acceptance_pending",
+  "status": "phase7_step_7_5_synthetic_board_acceptance_passed_physical_capture_pending",
   "contract_id": "acoustic-camera-capture/1.1-candidate",
   "hardware_branch": "phase/07-continuous-pcm",
   "hardware_commit": "536ee0284fa1c9df151142d840e9a55974c93d1d",
@@ -62,5 +62,18 @@
     "return_rule": "advance TAILDESC only after completion, cache invalidation, validation, and detached copy",
     "exhaustion": "no slot reuse until returned; hardware FIFO overflow invalidates the capture"
   },
-  "validation_scope": "host models only; no PYNQ-Z2 DMA, cache-coherency, or microphone capture evidence"
+  "board_acceptance": {
+    "run": "../../evidence/phase-07-step-05/dma-status-off-drain-reset/run-20261118T060733Z-drainreset/status.json",
+    "status": "pass",
+    "synthetic_packets": 353,
+    "frames_total": 1445888,
+    "words_total": 5783552,
+    "bytes_received": 23134208,
+    "descriptor_ring_wraps": 5,
+    "pattern_counter_wrap_crossed": true,
+    "controlled_overload_detected_and_recovered": true,
+    "official_base_restored": true,
+    "microphones_used": false
+  },
+  "validation_scope": "host models and PYNQ-Z2 synthetic DMA pattern/overload acceptance passed; physical four-microphone capture remains pending"
 }

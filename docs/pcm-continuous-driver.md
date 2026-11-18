@@ -47,10 +47,12 @@ successful result is returned. DMA and capture waits have finite deadlines. A
 failed DMA reset retains the CMA roots and marks the API unusable until the
 overlay is reloaded, so memory is not released while DMA might still write it.
 
-## Board attachment after Linux/PYNQ recovery
+## Board attachment and synthetic transport
 
-This is an API example for the later board step. `Overlay(...)` programs the
-FPGA, so this example was not executed in phase 7.3:
+The pattern source was exercised through the board runner in step 7.5 on the
+PYNQ-Z2. `Overlay(...)` programs the FPGA and replaces the active overlay; the
+runner verified the candidate and restored the official Base overlay afterward.
+The example below shows the API calls but does not include that restore logic:
 
 ```python
 from pynq import Overlay
@@ -72,16 +74,25 @@ all four microphones reported connected to Pmod B.
 
 ## Limits of this software step
 
-The verifier uses host models only. It checks descriptor layout and ownership,
-cache-sync call ordering, sequence across slot reuse, stop/drain accounting,
-counter mismatch, overflow handling, and unsafe-buffer retention after a
-failed reset. It does not establish that the DMA queue or cache maintenance has
-worked on the PYNQ-Z2. The phase-7.4 CDC review is complete; the routed CDC
-report retains bundled-data and reset/XPM classifications, with the two
-functional status paths registered in their source domains. Board DMA and
-cache-coherency validation remain pending. The API's BUILD_ID check and all
-eight host-model checks passed against the updated identity in the 7.4 review;
-the report is in `evidence/phase-07-step-04/software/`.
+The host verifier checks descriptor layout and ownership, cache-sync call
+ordering, sequence across slot reuse, stop/drain accounting, counter mismatch,
+overflow handling, and unsafe-buffer retention after a failed reset. In
+addition, step 7.5 passed on the PYNQ-Z2 with the synthetic pattern: 353
+packets, five descriptor-ring wraps, a 20-bit pattern-counter wrap, exact
+frame/word/byte totals, and a controlled overload that was detected and
+recovered. The driver soft-resets S2MM after STOP reports a completed drain so
+prefetched empty descriptors cannot retain DMA ownership. This demonstrates
+synthetic DMA and buffer visibility on the board; physical capture from the
+four microphones remains pending. The eight host checks were rerun successfully
+after the final stop/reset change; the prior host report is in
+`evidence/phase-07-step-04/software/`. The board report is in
+`evidence/phase-07-step-05/dma-status-off-drain-reset/`.
+
+The phase-7.4 routed CDC report still contains critical and warning
+classifications, including bundled-data and reset/XPM paths. The two
+functional status paths are registered in their source domains, but the
+candidate is not described as CDC-clean. Step 7.5 did not use microphones;
+step 7.6 physical four-channel capture requires all four connected at Pmod B.
 
 The implementation follows the [PYNQ 3.1 DMA documentation](https://pynq.readthedocs.io/en/v3.1/pynq_libraries/dma.html),
 which states that its DMA class supports simple mode only, and its
