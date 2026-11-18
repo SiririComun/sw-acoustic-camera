@@ -267,8 +267,12 @@ class ContinuousPcmDriverChecks(unittest.TestCase):
         self.assertEqual(prepared['queue_bytes'], 2 * 17 * 16)
         self.assertFalse(prepared['cyclic_dma_mode'])
         self.assertEqual(hardware.dma[0x30] & (1 << 4), 0)
-        self.assertTrue(all(int(hardware._array_at(hardware.descriptor_base + i * 64, 64,
-                          np.uint32, (16,))[4]) == (3 << 24) for i in range(2)))
+        self.assertTrue(all(
+            int(hardware._array_at(hardware.descriptor_base + i * 64, 64,
+                                   np.uint32, (16,))[4]) == 0
+            and int(hardware._array_at(hardware.descriptor_base + i * 64, 64,
+                                       np.uint32, (16,))[5]) == 0
+            for i in range(2)))
         arm = max(i for i, item in enumerate(hardware.log) if item == ('dma', 0x40, hardware.descriptor_base + 64))
         start = max(i for i, item in enumerate(hardware.log) if item == ('control', 0x24, 1))
         self.assertLess(arm, start)

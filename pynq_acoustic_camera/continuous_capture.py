@@ -93,7 +93,6 @@ class ContinuousPcmCapture:
     BD_NEXT_HI = 1
     BD_BUFFER_LO = 2
     BD_BUFFER_HI = 3
-    BD_CACHE_USER = 4
     BD_CONTROL = 6
     BD_STATUS = 7
     BD_RXSOF = 1 << 27
@@ -101,7 +100,6 @@ class ContinuousPcmCapture:
     BD_INTERNAL_ERROR = (1 << 28) | (1 << 29) | (1 << 30)
     BD_COMPLETE = 1 << 31
     BD_LENGTH_MASK = (1 << 23) - 1
-    BD_AWCACHE_NORMAL = 0x3 << 24
 
     def __init__(self, control_mmio, dma_mmio, expected_build_id=BUILD_ID, *,
                  allocator=None, recovery_timeout=1.0, provenance=None):
@@ -343,7 +341,6 @@ class ContinuousPcmCapture:
             descriptor[self.BD_NEXT_HI] = 0
             descriptor[self.BD_BUFFER_LO] = sample_address & 0xFFFFFFFF
             descriptor[self.BD_BUFFER_HI] = 0
-            descriptor[self.BD_CACHE_USER] = self.BD_AWCACHE_NORMAL
             descriptor[self.BD_CONTROL] = packet_bytes
             self._sample_slots[index].invalidate()
         descriptor_root.flush()
