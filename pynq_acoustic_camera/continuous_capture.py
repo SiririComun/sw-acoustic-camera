@@ -232,6 +232,12 @@ class ContinuousPcmCapture:
             'last_snapshot': dict(self._last_snapshot),
         }
         if include_sg:
+            try:
+                diagnostics['capture_fault_snapshot'] = self._capture_snapshot(
+                    timeout=min(0.2, self._recovery_timeout))
+            except Exception as snapshot_error:
+                diagnostics['capture_fault_snapshot_error'] = '{}: {}'.format(
+                    type(snapshot_error).__name__, snapshot_error)
             diagnostics.update({
                 'dma_current_descriptor': self._dma.read(self.DMA_CURDESC),
                 'dma_current_descriptor_msb': self._dma.read(self.DMA_CURDESC_MSB),
