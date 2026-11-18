@@ -333,6 +333,79 @@ def run_overload_check(overlay, ContinuousPcmCapture, args, report):
         save_json(args.output / 'status.json', report)
 
 
+def run_descriptor_probe(overlay, ContinuousPcmCapture, args, report):
+    """Exercise short S2MM SG packets to isolate packet/descriptor handling."""
+    capture = ContinuousPcmCapture.from_overlay(
+        overlay, provenance={
+            'phase_step': '7.5',
+            'scope': 'diagnostic_short_packet_probe',
+            'source': 'synthetic_pattern',
+            'candidate_build_id': BUILD_ID,
+            'hardware_commit': args.hardware_commit,
+            'software_commit': args.software_commit,
+        })
+    capture.enable_clock(timeout=2.0)
+    start = capture.start(
+        source='pattern', frames_per_descriptor=args.probe_frames,
+        slot_count=args.probe_slots, timeout=5.0)
+    probe = {
+        'scope': 'diagnostic_only_not_phase_acceptance',
+        'status': 'running',
+        'requested_packets': args.probe_packets,
+        'frames_per_descriptor': args.probe_frames,
+        'slot_count': args.probe_slots,
+        'start': start,
+        'packets': [],
+    }
+    report['descriptor_probe'] = probe
+    save_json(args.output / 'status.json', report)
+    try:
+        for index in range(args.probe_packets):
+            packet = capture.read_packet(timeout=2.0)
+            metadata = packet.metadata
+            if metadata['packet_index'] != index:
+                raise RuntimeError('Probe descriptor sequence has a gap or duplicate')
+            if metadata['first_frame'] != index * args.probe_frames:
+                raise RuntimeError('Probe frame counter is discontinuous')
+            probe['packets'].append({
+                'packet_index': index,
+                'first_frame': metadata['first_frame'],
+                'frames': metadata['frames'],
+                'bytes': metadata['bytes'],
+                'descriptor_status': metadata['descriptor_status'],
+                'counter_frames': metadata['counters']['frames'],
+                'counter_words': metadata['counters']['words'],
+            })
+        result = capture.stop(timeout=5.0).metadata
+        if result['packets_received'] < args.probe_packets:
+            raise RuntimeError('Probe stopped before all descriptors completed')
+        probe.update({'status': 'pass', 'result': result, 'finished_utc': utc_now()})
+        print('SG_PROBE_PASS packets={} frames={}'.format(
+            result['packets_received'], result['frames_total']), flush=True)
+    except BaseException as error:
+        probe.update({
+            'status': 'fail',
+            'error': '{}: {}'.format(type(error).__name__, error),
+            'traceback': traceback.format_exc(),
+            'finished_utc': utc_now(),
+        })
+        diagnostics = getattr(error, 'diagnostics', None)
+        if diagnostics is not None:
+            probe['error_diagnostics'] = diagnostics
+        if capture._state in ('starting', 'running', 'stopping', 'faulted'):
+            try:
+                capture.recover()
+                probe['recovery'] = 'ok'
+            except Exception as recovery_error:
+                probe['recovery'] = '{}: {}'.format(
+                    type(recovery_error).__name__, recovery_error)
+        raise
+    finally:
+        if capture._state == 'stopped' and capture.clock.clock_enabled:
+            capture.disable_clock()
+        save_json(args.output / 'status.json', report)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--bit', type=Path, required=True)
@@ -341,6 +414,9 @@ def main():
                         default=Path(__file__).resolve().parents[1] / 'src')
     parser.add_argument('--duration-seconds', type=int, default=30)
     parser.add_argument('--overload-stall-seconds', type=float, default=0.8)
+    parser.add_argument('--probe-packets', type=int)
+    parser.add_argument('--probe-frames', type=int, default=4)
+    parser.add_argument('--probe-slots', type=int, default=4)
     parser.add_argument('--hardware-commit', default='a9151b1ca4517d102aa5763f6e5ffcc2fa8f1d06')
     parser.add_argument('--software-commit', default='e7915daf20002bb2210df0365259c894670f2db3')
     args = parser.parse_args()
@@ -357,6 +433,7 @@ def main():
     report = {
         'phase': 7,
         'step': '7.5',
+        'scope': 'diagnostic_only' if args.probe_packets is not None else 'phase_acceptance',
         'status': 'running',
         'started_utc': utc_now(),
         'board_programming': 'candidate_replaces_active_overlay_then_official_base_restored',
@@ -390,7 +467,13 @@ def main():
             raise RuntimeError('Use the PYNQ virtualenv Python')
         if os.environ.get('XILINX_XRT') != '/usr':
             raise RuntimeError('XILINX_XRT must be /usr')
-        if args.duration_seconds < 30:
+        if args.probe_packets is not None and args.probe_packets < 1:
+            raise ValueError('Probe packet count must be positive')
+        if args.probe_packets is not None and not 1 <= args.probe_frames <= 65536:
+            raise ValueError('Probe frames must be in 1..65536')
+        if args.probe_packets is not None and not 2 <= args.probe_slots <= 256:
+            raise ValueError('Probe slots must be in 2..256')
+        if args.probe_packets is None and args.duration_seconds < 30:
             raise ValueError('Use at least 30 seconds to wrap the descriptor ring and pattern counter')
         if report['candidate_bit_sha256'] != BIT_SHA256 or report['candidate_hwh_sha256'] != HWH_SHA256:
             raise RuntimeError('Candidate BIT/HWH does not match the reviewed manifest')
@@ -427,9 +510,13 @@ def main():
         print('CANDIDATE_LOADED build_id_expected=' + BUILD_ID, flush=True)
 
         from pynq_acoustic_camera import ContinuousPcmCapture
-        run_continuous_pattern(overlay, ContinuousPcmCapture, args, report)
-        run_overload_check(overlay, ContinuousPcmCapture, args, report)
-        report['status'] = 'pass'
+        if args.probe_packets is not None:
+            run_descriptor_probe(overlay, ContinuousPcmCapture, args, report)
+            report['status'] = 'probe_pass'
+        else:
+            run_continuous_pattern(overlay, ContinuousPcmCapture, args, report)
+            run_overload_check(overlay, ContinuousPcmCapture, args, report)
+            report['status'] = 'pass'
     except BaseException as error:
         report.update({'status': 'fail',
                        'error': '{}: {}'.format(type(error).__name__, error),
@@ -467,8 +554,9 @@ def main():
         report['base_restored_ok'] = base_restored if candidate_load_attempted else None
         report['finished_utc'] = utc_now()
         save_json(status_path, report)
-    print('STEP7_5_RESULT=' + report['status'], flush=True)
-    return 0 if report['status'] == 'pass' and base_restored else 1
+    result_name = 'STEP7_5_PROBE_RESULT' if args.probe_packets is not None else 'STEP7_5_RESULT'
+    print(result_name + '=' + report['status'], flush=True)
+    return 0 if report['status'] in ('pass', 'probe_pass') and base_restored else 1
 
 
 if __name__ == '__main__':
