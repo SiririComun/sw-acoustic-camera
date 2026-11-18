@@ -238,7 +238,7 @@ class ContinuousPcmDriverChecks(unittest.TestCase):
                         'c_m_axi_s2mm_data_width': 32, 'c_m_axi_s2mm_addr_width': 32,
                         'c_m_axi_sg_addr_width': 32, 'c_s_axis_s2mm_tdata_width': 32,
                         'c_include_s2mm_dre': 0, 'c_enable_multi_channel': 0,
-                        'c_sg_include_stscntrl_strm': 1}},
+                        'c_sg_include_stscntrl_strm': 0}},
                 'processing_system7_0': {'parameters': {'C_S_AXI_HP0_DATA_WIDTH': 64}}}
             def is_loaded(self): return True
         return Overlay

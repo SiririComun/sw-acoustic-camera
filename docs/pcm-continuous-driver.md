@@ -1,11 +1,13 @@
 # Phase 7 continuous PCM software API
 
-The phase-7.4 hardware candidate is a separate ABI 1.1 build with BUILD_ID
-`7A2C7F017A2C4E7D8F70070100000002`. It retains the phase-7.2 register/stream
-contract and includes the reviewed source-domain status registers. The phase-4
-finite PCM candidate and its driver remain unchanged. This driver attaches only
-to the phase-7 candidate and uses direct S2MM Scatter/Gather MMIO; it does not
-instantiate PYNQ's simple-mode DMA driver.
+The phase-7 continuous hardware candidate is a separate ABI 1.1 build with
+BUILD_ID `7A2C7F017A2C4E7D8F70070100000003`. It retains the register/stream
+contract and reviewed source-domain status registers. AXI DMA's optional S2MM
+status stream is disabled because this design has no status-stream producer;
+without status data, the DMA does not mark received descriptors complete. The
+phase-4 finite PCM candidate and its driver remain unchanged. This driver
+attaches only to the phase-7 candidate and uses direct S2MM Scatter/Gather MMIO;
+it does not instantiate PYNQ's simple-mode DMA driver.
 
 ## Host API
 

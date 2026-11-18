@@ -3,8 +3,8 @@
   "status": "phase7_local_candidate_board_acceptance_pending",
   "contract_id": "acoustic-camera-capture/1.1-candidate",
   "hardware_branch": "phase/07-continuous-pcm",
-  "hardware_commit": "a9151b1ca4517d102aa5763f6e5ffcc2fa8f1d06",
-  "build_id_128": "7A2C7F017A2C4E7D8F70070100000002",
+  "hardware_commit": "536ee0284fa1c9df151142d840e9a55974c93d1d",
+  "build_id_128": "7A2C7F017A2C4E7D8F70070100000003",
   "abi_version": "0x00010001",
   "capabilities": "0x0000001F",
   "channels": 4,
@@ -41,6 +41,7 @@
     "descriptor_bytes": 64,
     "descriptor_alignment_bytes": 64,
     "buffer_alignment_bytes": 4,
+    "status_stream_enabled": false,
     "descriptor_status": {
       "complete_bit": 31,
       "rx_sof_bit": 27,

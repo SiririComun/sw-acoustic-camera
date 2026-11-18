@@ -49,7 +49,7 @@ class ContinuousPcmCapture:
     objects and an allocator that returns PYNQ-compatible contiguous buffers.
     """
 
-    BUILD_ID = '7A2C7F017A2C4E7D8F70070100000002'
+    BUILD_ID = '7A2C7F017A2C4E7D8F70070100000003'
     ABI_VERSION = 0x00010001
     CAPABILITIES = 0x0000001F
     PCM_RATE_HZ = 48000
@@ -152,7 +152,7 @@ class ContinuousPcmCapture:
                     'c_m_axi_s2mm_data_width': 32, 'c_m_axi_s2mm_addr_width': 32,
                     'c_m_axi_sg_addr_width': 32, 'c_s_axis_s2mm_tdata_width': 32,
                     'c_include_s2mm_dre': 0, 'c_enable_multi_channel': 0,
-                    'c_sg_include_stscntrl_strm': 1}
+                    'c_sg_include_stscntrl_strm': 0}
         for key, expected in required.items():
             try:
                 value = int(str(params[key]), 0)
