@@ -111,6 +111,41 @@ def inspect_retained_dma_buffers():
     return result
 
 
+def read_fault_registers(capture):
+    """Snapshot the live DMA pointers and PCM counters before restoring Base."""
+    dma = capture._dma
+    control = capture._control
+    registers = {
+        'dma': {
+            'control': dma.read(0x30),
+            'status': dma.read(0x34),
+            'current_descriptor': dma.read(0x38),
+            'current_descriptor_msb': dma.read(0x3C),
+            'tail_descriptor': dma.read(0x40),
+            'tail_descriptor_msb': dma.read(0x44),
+        },
+        'capture': {
+            'status': control.read(0x28),
+            'error_flags': control.read(0x2C),
+            'format': control.read(0x30),
+            'source_pattern': control.read(0x34),
+            'frames_produced': control.read(0x4C),
+            'words_sent': control.read(0x50),
+            'overflow_count': control.read(0x54),
+            'total_frames_low': control.read(0x68),
+            'total_frames_high': control.read(0x6C),
+            'total_words_low': control.read(0x70),
+            'total_words_high': control.read(0x74),
+        },
+    }
+    root = capture._descriptor_root
+    if root is not None:
+        root.invalidate()
+        registers['descriptors'] = [
+            [int(word) for word in row[:8]] for row in root[:4]]
+    return registers
+
+
 def run_continuous_pattern(overlay, ContinuousPcmCapture, args, report):
     capture = ContinuousPcmCapture.from_overlay(
         overlay, provenance={
@@ -206,6 +241,11 @@ def run_continuous_pattern(overlay, ContinuousPcmCapture, args, report):
         diagnostics = getattr(error, 'diagnostics', None)
         if diagnostics is not None:
             run['error_diagnostics'] = diagnostics
+        try:
+            run['fault_registers'] = read_fault_registers(capture)
+        except Exception as diagnostic_error:
+            run['fault_registers_error'] = '{}: {}'.format(
+                type(diagnostic_error).__name__, diagnostic_error)
         if capture._state in ('starting', 'running', 'stopping', 'faulted'):
             try:
                 capture.recover()
