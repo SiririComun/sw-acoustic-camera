@@ -249,6 +249,11 @@ class ContinuousPcmCapture:
                 diagnostics['dma_descriptors_first_4'] = [
                     [int(word) for word in descriptor[:8]]
                     for descriptor in self._descriptors[:4]]
+            if self._sample_root is not None:
+                self._sample_root.invalidate()
+                diagnostics['dma_sample_first_4_slots'] = [
+                    [int(value) for value in slot.reshape(-1)[:8]]
+                    for slot in self._sample_slots[:4]]
         return diagnostics
 
     def _check_health(self):
