@@ -418,7 +418,7 @@ def main():
     parser.add_argument('--probe-frames', type=int, default=4)
     parser.add_argument('--probe-slots', type=int, default=4)
     parser.add_argument('--hardware-commit', default='536ee0284fa1c9df151142d840e9a55974c93d1d')
-    parser.add_argument('--software-commit', default='064ecabb5e92e29d774d0eaa6d7d551835798ede')
+    parser.add_argument('--software-commit', default='2b6118f6d6777727c45cf32285b9b1cc5c4b07d5')
     args = parser.parse_args()
     args.bit = args.bit.resolve()
     args.output = args.output.resolve()
