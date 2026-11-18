@@ -33,9 +33,10 @@ index and channel order, including the 20-bit pattern wrap. For
 `source='microphones'`, the filter-ready bit is required before START. The
 physical microphone capture is not run by this host API verifier.
 
-`stop()` asks the capture IP to stop at the next packet boundary, keeps draining
-and returning descriptors until DONE, halts the S2MM engine after the stream is
-drained, then checks the final 64-bit identities:
+`stop()` asks the capture IP to stop at the next packet boundary, drains
+completed descriptors without re-arming slots, and waits for DONE. The software
+then soft-resets S2MM to retire any prefetched empty descriptors before it
+checks the final 64-bit identities and releases buffers:
 
 ```text
 frames_total * 16 == words_total * 4 == bytes_received

@@ -290,6 +290,11 @@ class ContinuousPcmDriverChecks(unittest.TestCase):
             self.assertFalse(np.shares_memory(packet.samples, hardware.buffers[-1]))
 
         result = api.stop(timeout=0.1)
+        stop_command = max(i for i, item in enumerate(hardware.log)
+                           if item == ('control', 0x24, ContinuousPcmCapture.CMD_STOP))
+        stop_reset = max(i for i, item in enumerate(hardware.log)
+                         if item == ('dma', 0x30, ContinuousPcmCapture.DMA_RESET))
+        self.assertGreater(stop_reset, stop_command)
         self.assertIsInstance(result, ContinuousCaptureResult)
         self.assertEqual(result.metadata['cyclic_dma_mode'], False)
         self.assertEqual(result.metadata['frames_total'], 5 * 17)

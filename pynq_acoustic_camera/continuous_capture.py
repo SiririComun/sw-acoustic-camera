@@ -545,6 +545,12 @@ class ContinuousPcmCapture:
             raise RuntimeError('DMA descriptor completed ahead of the accepted AXI word counter')
         if requeue:
             self._requeue(slot)
+        else:
+            # Retire this CPU-owned descriptor without adding it back to the
+            # S2MM tail. This also prevents the final drain scan from reading
+            # the same completion twice after the DMA ownership barrier.
+            self._descriptors[slot][self.BD_STATUS] = 0
+            self._descriptors[slot].flush()
         metadata = {
             'packet_index': packet_index,
             'first_frame': first_frame,
@@ -607,11 +613,12 @@ class ContinuousPcmCapture:
             self._control.write(0x24, self.CMD_STOP)
             self._state = 'stopping'
             deadline = time.monotonic() + timeout
-            # Continue returning completed slots until hardware reports that
-            # the packet-boundary stop and AXI Stream drain have completed.
+            # Consume completed packets until hardware reports that the
+            # packet-boundary stop and AXI Stream drain have completed. Do not
+            # re-arm slots after STOP has been requested.
             while True:
                 self._check_health()
-                packet = self._consume_next(return_samples=False, requeue=True)
+                packet = self._consume_next(return_samples=False, requeue=False)
                 status = self._control.read(0x28)
                 if status & self.STATUS_DONE and not status & self.STATUS_BUSY:
                     break
@@ -621,12 +628,12 @@ class ContinuousPcmCapture:
                 if packet is None:
                     time.sleep(min(0.001, remaining))
 
-            # Halt S2MM only after the producer reports a clean drain so the
-            # final descriptor writebacks are stable before inspecting them.
-            self._dma.write(self.DMA_CR, 0)
-            self._wait(lambda: bool(self._dma.read(self.DMA_SR) & self.DMA_HALTED),
-                       max(0.0, deadline - time.monotonic()),
-                       'AXI DMA did not halt after STOP')
+            # The managed ring still has prefetched, empty descriptors posted.
+            # A graceful RS=0 can wait forever on one after the producer has
+            # stopped. Soft-reset S2MM after the stream drain; reset completion
+            # is the ownership barrier before reading final counts/freeing DMA
+            # buffers, and AXI DMA completes or flushes pending operations.
+            self._reset_dma(timeout=max(0.0, deadline - time.monotonic()))
             self._check_health()
             self._drain_ready()
             counters = self._snapshot_health()
