@@ -114,6 +114,7 @@ def run_continuous_pattern(overlay, ContinuousPcmCapture, args, report):
             'build_id': identity.build_id,
         },
         'packets': [],
+        'health_after_start': capture._diagnostics(),
     }
     report['continuous_pattern'] = run
     save_json(args.output / 'status.json', report)
@@ -174,6 +175,9 @@ def run_continuous_pattern(overlay, ContinuousPcmCapture, args, report):
         run.update({'status': 'fail', 'finished_utc': utc_now(),
                     'error': '{}: {}'.format(type(error).__name__, error),
                     'traceback': traceback.format_exc()})
+        diagnostics = getattr(error, 'diagnostics', None)
+        if diagnostics is not None:
+            run['error_diagnostics'] = diagnostics
         if capture._state in ('starting', 'running', 'stopping', 'faulted'):
             try:
                 capture.recover()
