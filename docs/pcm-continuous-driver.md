@@ -1,10 +1,11 @@
 # Phase 7 continuous PCM software API
 
-The phase-7.2 hardware candidate is a separate ABI 1.1 build with BUILD_ID
-`7A2C7F017A2C4E7D8F70070100000001`. The phase-4 finite PCM candidate and its
-driver remain unchanged. This driver attaches only to the phase-7 candidate and
-uses direct S2MM Scatter/Gather MMIO; it does not instantiate PYNQ's simple-mode
-DMA driver.
+The phase-7.4 hardware candidate is a separate ABI 1.1 build with BUILD_ID
+`7A2C7F017A2C4E7D8F70070100000002`. It retains the phase-7.2 register/stream
+contract and includes the reviewed source-domain status registers. The phase-4
+finite PCM candidate and its driver remain unchanged. This driver attaches only
+to the phase-7 candidate and uses direct S2MM Scatter/Gather MMIO; it does not
+instantiate PYNQ's simple-mode DMA driver.
 
 ## Host API
 
@@ -72,9 +73,12 @@ The verifier uses host models only. It checks descriptor layout and ownership,
 cache-sync call ordering, sequence across slot reuse, stop/drain accounting,
 counter mismatch, overflow handling, and unsafe-buffer retention after a
 failed reset. It does not establish that the DMA queue or cache maintenance has
-worked on the PYNQ-Z2. The Linux/PYNQ recovery blocker remains active. The HW
-candidate's routed CDC report also remains non-clean, with manual review still
-required before integration or phase closure.
+worked on the PYNQ-Z2. The phase-7.4 CDC review is complete; the routed CDC
+report retains bundled-data and reset/XPM classifications, with the two
+functional status paths registered in their source domains. Board DMA and
+cache-coherency validation remain pending. The API's BUILD_ID check and all
+eight host-model checks passed against the updated identity in the 7.4 review;
+the report is in `evidence/phase-07-step-04/software/`.
 
 The implementation follows the [PYNQ 3.1 DMA documentation](https://pynq.readthedocs.io/en/v3.1/pynq_libraries/dma.html),
 which states that its DMA class supports simple mode only, and its

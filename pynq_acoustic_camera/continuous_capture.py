@@ -49,7 +49,7 @@ class ContinuousPcmCapture:
     objects and an allocator that returns PYNQ-compatible contiguous buffers.
     """
 
-    BUILD_ID = '7A2C7F017A2C4E7D8F70070100000001'
+    BUILD_ID = '7A2C7F017A2C4E7D8F70070100000002'
     ABI_VERSION = 0x00010001
     CAPABILITIES = 0x0000001F
     PCM_RATE_HZ = 48000
