@@ -83,6 +83,34 @@ def request_snapshot(control, timeout=2.0):
     return values
 
 
+def inspect_retained_dma_buffers():
+    """After PL reprogramming, inspect and release buffers retained on DMA reset failure."""
+    from pynq_acoustic_camera.continuous_capture import _UNSAFE_CONTINUOUS_BUFFERS
+
+    roots = list(_UNSAFE_CONTINUOUS_BUFFERS)
+    result = []
+    for index, buffer in enumerate(roots):
+        buffer.invalidate()
+        item = {
+            'retained_index': index,
+            'shape': list(buffer.shape),
+            'dtype': str(buffer.dtype),
+            'physical_address': int(buffer.physical_address),
+        }
+        if len(buffer.shape) == 2 and buffer.shape[1] == 16:
+            item['first_descriptors_words_0_to_7'] = [
+                [int(word) for word in row[:8]] for row in buffer[:2]]
+        result.append(item)
+    # The caller invokes this only after the official Base bitstream has been
+    # reloaded and verified, so the previous S2MM engine cannot access CMA.
+    for buffer in roots:
+        buffer.freebuffer()
+    _UNSAFE_CONTINUOUS_BUFFERS[:] = [
+        buffer for buffer in _UNSAFE_CONTINUOUS_BUFFERS
+        if all(buffer is not root for root in roots)]
+    return result
+
+
 def run_continuous_pattern(overlay, ContinuousPcmCapture, args, report):
     capture = ContinuousPcmCapture.from_overlay(
         overlay, provenance={
@@ -375,6 +403,7 @@ def main():
                     Path('/sys/class/fpga_manager/fpga0/state'),
                     Path('/sys/class/fpga_manager/fpga0/flags'))
                 base_restored = True
+                report['retained_dma_buffers_after_base_restore'] = inspect_retained_dma_buffers()
                 print('OFFICIAL_BASE_RESTORED', flush=True)
             except BaseException as restore_error:
                 report['base_restore_error'] = '{}: {}'.format(
