@@ -4,7 +4,7 @@ from importlib import import_module
 from .loader import HardwareLoader, HardwareConfigError, HardwareIntegrityError, HardwareDownloadError
 from .notebooks import install_notebooks
 
-__version__ = '0.1.0rc2'
+__version__ = '0.1.0rc3'
 
 # Scientific routines and the explicitly opted-in XADC driver are retained from
 # the source project, without importing PYNQ/scientific/UI stacks on basic import.
@@ -20,6 +20,8 @@ _LAZY.update({name: '.pcm_capture' for name in ('AcousticArray', 'CaptureResult'
 _LAZY.update({name: '.continuous_capture' for name in (
     'ContinuousPcmCapture', 'ContinuousPcmPacket', 'ContinuousCaptureResult',
     'ContinuousCaptureError')})
+_LAZY.update({name: '.single_tone' for name in (
+    'ToneDetectorConfig', 'StreamingSingleToneDetector', 'SingleToneEventTracker')})
 _LAZY.update({'HardwareTrigger': '.hw_trigger', 'MicrophoneArrayOverlay': '.array',
               'KinematicsDashboard': '.kinematics_dashboard',
               'PdmCandidate': '.pdm_candidate',
