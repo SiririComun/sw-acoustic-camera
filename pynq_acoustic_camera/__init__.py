@@ -22,6 +22,8 @@ _LAZY.update({name: '.continuous_capture' for name in (
     'ContinuousCaptureError')})
 _LAZY.update({name: '.single_tone' for name in (
     'ToneDetectorConfig', 'StreamingSingleToneDetector', 'SingleToneEventTracker')})
+_LAZY.update({name: '.single_source_aoa' for name in (
+    'AoAConfig', 'SingleSourceAoAEstimator')})
 _LAZY.update({'HardwareTrigger': '.hw_trigger', 'MicrophoneArrayOverlay': '.array',
               'KinematicsDashboard': '.kinematics_dashboard',
               'PdmCandidate': '.pdm_candidate',
