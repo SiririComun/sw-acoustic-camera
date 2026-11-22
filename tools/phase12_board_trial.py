@@ -26,6 +26,8 @@ def main(argv=None):
     parser.add_argument('--view', choices=('combined', 'source0', 'source1'),
                         default='combined')
     parser.add_argument('--pcm-channels', type=int, nargs=4, default=(0, 1, 2, 3))
+    parser.add_argument('--audio-only', action='store_true',
+                        help='run PCM and AoA without opening C920 or HDMI')
     args = parser.parse_args(argv)
     if os.geteuid() != 0 or sys.prefix != '/usr/local/share/pynq-venv':
         raise RuntimeError('Run as root with the PYNQ virtualenv Python')
@@ -33,7 +35,10 @@ def main(argv=None):
     import phase6_video_perf as video
     from pynq import Overlay
     from pynq.pl_server.device import Device
-    from tools.phase12_live_camera import main as live_main
+    if args.audio_only:
+        from tools.phase12_audio_trial import main as live_main
+    else:
+        from tools.phase12_live_camera import main as live_main
 
     video.verify_base_artifacts()
     video.use_legacy_metadata_parser()
@@ -46,13 +51,17 @@ def main(argv=None):
     print('PHASE12_BASE_PRELOAD_OK bit_sha256={}'.format(
         video.EXPECTED_BASE_BIT_SHA256), flush=True)
 
-    trial_args = [
-        '--bit', str(args.bit), '--output', str(args.output),
-        '--duration-seconds', str(args.duration_seconds),
-        '--max-sources', str(args.max_sources), '--view', args.view,
-        '--pcm-channels', *(str(channel) for channel in args.pcm_channels),
-        '--manual-frequencies', *(str(frequency) for frequency in args.manual_frequencies),
-    ]
+    trial_args = ['--bit', str(args.bit), '--output', str(args.output),
+                  '--duration-seconds', str(args.duration_seconds),
+                  '--max-sources', str(args.max_sources),
+                  '--manual-frequencies',
+                  *(str(frequency) for frequency in args.manual_frequencies)]
+    if args.audio_only:
+        trial_args.extend(['--pcm-channels',
+                           *(str(channel) for channel in args.pcm_channels)])
+    else:
+        trial_args.extend(['--view', args.view, '--pcm-channels',
+                           *(str(channel) for channel in args.pcm_channels)])
     try:
         live_main(trial_args)
     finally:

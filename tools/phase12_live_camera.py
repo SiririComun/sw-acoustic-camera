@@ -47,6 +47,7 @@ class LiveState:
         self.aoa_status_by_source = Counter()
         self.present_windows_by_source = Counter()
         self.capture_result = None
+        self.capture_ready = threading.Event()
 
 
 def capture_worker(overlay, stop_event, state, event_log_path, *,
@@ -73,6 +74,7 @@ def capture_worker(overlay, stop_event, state, event_log_path, *,
         capture.wait_filter_ready(timeout=8.0)
         queue = capture.start(source='microphones', frames_per_descriptor=4096,
                               slot_count=64, timeout=5.0)
+        state.capture_ready.set()
         with event_log_path.open('a', encoding='utf-8') as events:
             events.write(json.dumps({'type': 'capture_started', 'queue': queue}) + '\n')
             events.flush()

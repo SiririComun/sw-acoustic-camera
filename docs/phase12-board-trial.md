@@ -20,6 +20,16 @@ En una terminal interactiva del PC, desde el repositorio SW:
 python3 tools/phase12_launch_from_pc.py --max-sources 2 --view combined
 ```
 
+Para aislar detección/AoA mientras la C920 USB está inestable, usar el mismo
+lanzador con `--audio-only`. Captura PCM y registra eventos/métricas durante
+45 s sin abrir la webcam ni HDMI; el estímulo sigue siendo pulsado y separado
+por canal estéreo. Este modo diagnostica audio en placa y no demuestra
+localización calibrada ni completa la integración técnica 12.4.
+
+```bash
+python3 tools/phase12_launch_from_pc.py --max-sources 2 --audio-only
+```
+
 El lanzador abre SSH y `sudo` pide la contraseña **en esa terminal**. No se
 envía ni guarda la contraseña. El runner verifica y recarga explícitamente la
 Base oficial antes de descargar el candidato, y la restaura al terminar o al
@@ -40,3 +50,5 @@ frente al período de descriptor, número de cuadros HDMI, detección de ambas
 frecuencias, AoA válidos por ID y cuadros con 0/1/2 mapas visibles. La ejecución
 no acepta por sí sola identidad de canales, ubicación física ni coincidencia
 del mapa con un altavoz; eso permanece en las fases 9, 10.4 y 12.5.
+El ensayo audio-only tampoco prueba convivencia con C920/HDMI; la cámara sigue
+siendo requisito para cerrar la integración técnica de 12.4.

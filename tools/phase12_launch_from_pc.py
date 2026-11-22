@@ -29,6 +29,8 @@ def main(argv=None):
     parser.add_argument('--max-sources', type=int, choices=(1, 2), default=2)
     parser.add_argument('--view', choices=('combined', 'source0', 'source1'),
                         default='combined')
+    parser.add_argument('--audio-only', action='store_true',
+                        help='check PCM and AoA without C920 or HDMI')
     args = parser.parse_args(argv)
     if not sys.stdin.isatty():
         raise RuntimeError('Run this launcher in an interactive PC terminal')
@@ -50,6 +52,8 @@ def main(argv=None):
         + ' --view ' + args.view
         + ' --manual-frequencies ' + frequencies
     )
+    if args.audio_only:
+        command += ' --audio-only'
     print('LaZ2 trial: {}\nEvidence: {}'.format(remote_output, output), flush=True)
     old_mute = subprocess.run(
         ['pactl', 'get-sink-mute', '@DEFAULT_SINK@'],
@@ -80,13 +84,15 @@ def main(argv=None):
                         sys.stdout.buffer.write(chunk)
                         sys.stdout.buffer.flush()
                         tail = (tail + chunk)[-512:]
-                        if not ready and b'PHASE12_LIVE_READY' in tail:
+                        ready_marker = (b'PHASE12_AUDIO_READY' if args.audio_only
+                                        else b'PHASE12_LIVE_READY')
+                        if not ready and ready_marker in tail:
                             ready = True
                             subprocess.run(['pactl', 'set-sink-mute', '@DEFAULT_SINK@', '0'],
                                            check=True)
                             playback = subprocess.Popen(
                                 ['paplay', '--volume=65536', str(stimulus)])
-                            print('\nPC playback started: stereo 1550 Hz left, '
+                            print('\nPC playback started: pulsed stereo 1550 Hz left, '
                                   '2350 Hz right', flush=True)
                     if board.poll() is not None and not selector.get_map():
                         break
