@@ -13,9 +13,12 @@ class SingleSourcePcmPipeline:
     treat the interrupted segment as invalid and may start a new one.
     """
 
-    def __init__(self, detector=None, estimator=None):
+    def __init__(self, detector=None, estimator=None, aoa_update_stride=1):
+        if type(aoa_update_stride) is not int or aoa_update_stride < 1:
+            raise ValueError('aoa_update_stride must be a positive integer')
         self.detector = detector or StreamingSingleToneDetector()
         self.estimator = estimator or SingleSourceAoAEstimator()
+        self.aoa_update_stride = aoa_update_stride
         config = self.detector.config
         if config.window_frames < 512:
             raise ValueError('AoA requires a detector window of at least 512 frames')
@@ -30,6 +33,7 @@ class SingleSourcePcmPipeline:
         self._next_frame = None
         self._next_packet_index = None
         self._base_frame = None
+        self._last_aoa_window = None
 
     @staticmethod
     def _absolute_window(window, base_frame):
@@ -91,13 +95,23 @@ class SingleSourcePcmPipeline:
             aoa = None
             frequency = window['system']['frequency_hz']
             if window['system']['present'] and frequency is not None:
-                aoa = self.estimator.estimate(
-                    merged[start:stop],
-                    sample_rate_hz=self.detector.config.sample_rate_hz,
-                    frequency_hz=frequency,
-                    first_frame=window['first_frame'],
-                    window_index=window['window_index'])
-            results.append({'packet_index': index, 'window': window, 'aoa': aoa})
+                due = (self._last_aoa_window is None
+                       or window['window_index'] - self._last_aoa_window
+                       >= self.aoa_update_stride)
+                if due:
+                    aoa = self.estimator.estimate(
+                        merged[start:stop],
+                        sample_rate_hz=self.detector.config.sample_rate_hz,
+                        frequency_hz=frequency,
+                        first_frame=window['first_frame'],
+                        window_index=window['window_index'])
+                    self._last_aoa_window = window['window_index']
+            else:
+                self._last_aoa_window = None
+            results.append({'packet_index': index, 'window': window, 'aoa': aoa,
+                            'aoa_skipped': bool(window['system']['present']
+                                                and frequency is not None
+                                                and aoa is None)})
         retained = self.detector.config.window_frames - 1
         self._history = np.array(merged[-retained:], dtype=np.int32, copy=True)
         self._next_frame = first + frames

@@ -28,6 +28,7 @@ class AoAConfig:
     min_prominence_db: float = 10.0
     max_phase_residual_rad: float = 0.25
     ambiguity_margin_rad: float = 0.05
+    max_refinement_seeds: int = 16
 
     def __post_init__(self):
         positions = np.asarray(self.positions_m, dtype=np.float64)
@@ -47,6 +48,8 @@ class AoAConfig:
                 raise ValueError('{} must be finite'.format(name))
         if self.speed_of_sound_m_s <= 0 or self.min_prominence_db < 0:
             raise ValueError('Sound speed must be positive and prominence nonnegative')
+        if type(self.max_refinement_seeds) is not int or self.max_refinement_seeds < 1:
+            raise ValueError('max_refinement_seeds must be a positive integer')
         if not 0 < self.max_phase_residual_rad < math.pi or self.ambiguity_margin_rad < 0:
             raise ValueError('Phase thresholds are outside their valid ranges')
 
@@ -90,7 +93,7 @@ class SingleSourceAoAEstimator:
             candidate = coarse[index]
             if all(np.linalg.norm(candidate[:2] - old[:2]) >= 0.15 for old in seeds):
                 seeds.append(candidate)
-                if len(seeds) == 16:
+                if len(seeds) == self.config.max_refinement_seeds:
                     break
         refined = []
         for seed in seeds:

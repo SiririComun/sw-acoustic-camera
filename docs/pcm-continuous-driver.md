@@ -68,7 +68,10 @@ result = capture.stop()
 
 `from_overlay()` checks the loaded HWH for S2MM Scatter/Gather, 32-bit sample
 and descriptor addressing, the configured descriptor length, and 64-bit PS
-HP0. Construction does not program the overlay or write MMIO. For physical
+HP0 by default. Construction does not program the overlay or write MMIO. The
+Phase 11 Base combination leaves video VDMA on HP0 and explicitly attaches PCM
+to HP2 with `ContinuousPcmCapture.from_overlay(overlay, memory_port='HP2')`;
+the HWH check requires the selected port to be 64-bit. For physical
 four-channel capture, use `source='microphones'`; that later intervention needs
 all four microphones reported connected to Pmod B.
 

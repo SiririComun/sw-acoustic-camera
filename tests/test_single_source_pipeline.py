@@ -52,6 +52,20 @@ def test_detector_event_feeds_matching_pcm_windows_to_aoa():
         np.testing.assert_array_equal(packet.samples, before)
 
 
+def test_aoa_stride_keeps_active_tone_windows_while_skipping_fits():
+    pipeline = SingleSourcePcmPipeline(aoa_update_stride=4)
+    outputs = []
+    for index in range(6):
+        outputs.extend(pipeline.process_packet(make_packet(index, index*4096)))
+    computed = [row for row in outputs if row['aoa'] is not None]
+    skipped = [row for row in outputs if row['aoa_skipped']]
+    assert len(computed) >= 2
+    assert skipped
+    assert all(row['window']['system']['present'] for row in skipped)
+    indices = [row['window']['window_index'] for row in computed]
+    assert all(b - a >= 4 for a, b in zip(indices, indices[1:]))
+
+
 def test_variable_packet_lengths_and_absolute_frame_offsets():
     pipeline = SingleSourcePcmPipeline()
     start = 10000

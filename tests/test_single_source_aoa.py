@@ -37,7 +37,7 @@ def plane_wave(azimuth_deg, elevation_deg, frequency_hz, *, config=None,
                                                 (-35, -20), (70, 0), (-70, 0),
                                                 (0, 70), (0, -70)])
 def test_known_directions_and_signs(frequency_hz, azimuth, elevation):
-    estimator = SingleSourceAoAEstimator()
+    estimator = SingleSourceAoAEstimator(AoAConfig(max_refinement_seeds=4))
     pcm = plane_wave(azimuth, elevation, frequency_hz)
     result = estimator.estimate(pcm, sample_rate_hz=48000,
                                 frequency_hz=frequency_hz, first_frame=8192,

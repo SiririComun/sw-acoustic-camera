@@ -142,8 +142,13 @@ class ContinuousPcmCapture:
         self._last_result = None
 
     @classmethod
-    def from_overlay(cls, overlay, expected_build_id=BUILD_ID, *, provenance=None):
-        """Attach to the continuous candidate after read-only HWH checks."""
+    def from_overlay(cls, overlay, expected_build_id=BUILD_ID, *,
+                     memory_port='HP0', provenance=None):
+        """Attach after read-only HWH checks, using the selected PS HP port.
+
+        The standalone continuous-capture candidate uses HP0. The Phase 11
+        PYNQ Base combination keeps video on HP0 and routes PCM through HP2.
+        """
         ips = overlay.ip_dict
         control, dma = ips['acoustic_capture_0'], ips['axi_dma_audio']
         params = {key.lower(): value for key, value in dma['parameters'].items()}
@@ -160,13 +165,19 @@ class ContinuousPcmCapture:
                 raise PdmIdentityError('Missing or invalid DMA HWH parameter: ' + key) from error
             if value != expected:
                 raise PdmIdentityError('Unexpected DMA HWH parameter: ' + key)
-        ps = {key.lower(): value for key, value in ips['processing_system7_0']['parameters'].items()}
+        port = str(memory_port).upper()
+        if port not in ('HP0', 'HP2'):
+            raise PdmIdentityError('Memory port must be HP0 or HP2')
+        ps_names = [name for name in ('processing_system7_0', 'ps7_0') if name in ips]
+        if len(ps_names) != 1:
+            raise PdmIdentityError('HWH must identify exactly one supported Zynq PS instance')
+        ps = {key.lower(): value for key, value in ips[ps_names[0]]['parameters'].items()}
         try:
-            hp0_width = int(str(ps['c_s_axi_hp0_data_width']), 0)
+            hp_width = int(str(ps['c_s_axi_{}_data_width'.format(port.lower())]), 0)
         except (KeyError, ValueError) as error:
-            raise PdmIdentityError('Missing or invalid PS HP0 width in HWH') from error
-        if hp0_width != 64:
-            raise PdmIdentityError('PYNQ-Z2 candidate requires HP0 configured for 64-bit data')
+            raise PdmIdentityError('Missing or invalid PS {} width in HWH'.format(port)) from error
+        if hp_width != 64:
+            raise PdmIdentityError('PYNQ-Z2 candidate requires {} configured for 64-bit data'.format(port))
         if not overlay.is_loaded():
             raise PdmIdentityError('Overlay is not loaded')
         from pynq import MMIO, allocate
