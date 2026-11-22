@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate a bounded stereo stimulus for the Phase 12 technical trial."""
+"""Generate separated, pulsed stereo tones for the Phase 12 technical trial."""
 
 import argparse
 from pathlib import Path
@@ -20,8 +20,12 @@ def main(argv=None):
         raise ValueError('seconds must be between 6 and 60')
     count = round(RATE * args.seconds)
     time_s = np.arange(count, dtype=np.float64) / RATE
-    envelope = np.clip((time_s - 2.0) / 0.025, 0.0, 1.0)
-    envelope *= np.clip((args.seconds - 2.0 - time_s) / 0.025, 0.0, 1.0)
+    # One second of both tones, then two seconds of silence. Short ramps avoid
+    # clicks. The two frequencies remain on separate stereo channels.
+    phase_s = np.mod(time_s - 2.0, 3.0)
+    envelope = np.clip(phase_s / 0.025, 0.0, 1.0)
+    envelope *= np.clip((1.0 - phase_s) / 0.025, 0.0, 1.0)
+    envelope *= (time_s >= 2.0) & (time_s < args.seconds - 2.0)
     left = 0.35 * np.sin(2 * np.pi * 1550.0 * time_s) * envelope
     right = 0.35 * np.sin(2 * np.pi * 2350.0 * time_s) * envelope
     stereo = np.column_stack((left, right))
@@ -32,8 +36,8 @@ def main(argv=None):
         out.setsampwidth(2)
         out.setframerate(RATE)
         out.writeframes(pcm.tobytes())
-    print('{}: {:.3f} s, 1550 Hz left and 2350 Hz right, simultaneous'.format(
-        args.output, count / RATE))
+    print('{}: {:.3f} s, pulsed 1550 Hz left and 2350 Hz right, '
+          '1 s on / 2 s off'.format(args.output, count / RATE))
 
 
 if __name__ == '__main__':

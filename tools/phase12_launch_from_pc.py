@@ -85,9 +85,9 @@ def main(argv=None):
                             subprocess.run(['pactl', 'set-sink-mute', '@DEFAULT_SINK@', '0'],
                                            check=True)
                             playback = subprocess.Popen(
-                                ['paplay', '--volume=22938', str(stimulus)])
-                            print('\nPC playback started: simultaneous 1550/2350 Hz',
-                                  flush=True)
+                                ['paplay', '--volume=65536', str(stimulus)])
+                            print('\nPC playback started: stereo 1550 Hz left, '
+                                  '2350 Hz right', flush=True)
                     if board.poll() is not None and not selector.get_map():
                         break
             finally:

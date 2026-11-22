@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Prepared Phase 12 runner: continuous PCM, C920 and two-source HDMI maps.
+"""Phase 12 live PCM, C920 and two-source HDMI maps.
 
-This runner has only been reviewed and exercised through host-safe components.
-The combined BIT/HWH, ARM load and live HDMI path require the Phase 12.4 board
-integration test. Geometry, channel identity and camera FOV are provisional.
+Board trials show two live tonal AoAs and separated map regions, but sustained
+dual-tone processing and C920 USB stability remain under investigation.
+Geometry, channel identity and camera FOV are provisional.
 """
 
 import argparse
@@ -34,9 +34,9 @@ from pynq_acoustic_camera.two_tone import StreamingTwoToneDetector, TwoToneConfi
 
 
 class LiveState:
-    def __init__(self):
+    def __init__(self, max_age_s=0.5):
         self.lock = threading.Lock()
-        self.visual = TwoSourceVisualState(max_age_s=0.5)
+        self.visual = TwoSourceVisualState(max_age_s=max_age_s)
         self.error = None
         self.packets = 0
         self.discontinuities = 0
@@ -44,18 +44,24 @@ class LiveState:
         self.packet_wall_ms = []
         self.packet_period_overruns = 0
         self.aoa_status_counts = Counter()
+        self.aoa_status_by_source = Counter()
+        self.present_windows_by_source = Counter()
         self.capture_result = None
 
 
 def capture_worker(overlay, stop_event, state, event_log_path, *,
                    max_sources, manual_frequencies_hz, pcm_channels):
     capture = None
-    config = AoAConfig(pcm_channels=pcm_channels, max_refinement_seeds=4)
+    # Two active tracks roughly double the AoA fit rate. The lighter search
+    # reduces load; continuous dual-tone input can still overflow this board.
+    config = AoAConfig(pcm_channels=pcm_channels,
+                       max_refinement_seeds=2 if max_sources == 2 else 4)
     detector = StreamingTwoToneDetector(TwoToneConfig(
         max_sources=max_sources, manual_frequencies_hz=manual_frequencies_hz))
     pipeline = TwoSourcePcmPipeline(
         detector=detector, estimator=SingleSourceAoAEstimator(config),
-        aoa_update_stride=16, max_fits_per_window=1)
+        aoa_update_stride=64 if max_sources == 2 else 16,
+        max_fits_per_window=1)
     try:
         capture = ContinuousPcmCapture.from_overlay(
             overlay, memory_port='HP2', provenance={
@@ -99,8 +105,12 @@ def capture_worker(overlay, stop_event, state, event_log_path, *,
                     for row in rows:
                         state.visual.update(row, time.monotonic())
                         for source in row['sources']:
+                            if source['present']:
+                                state.present_windows_by_source[source['id']] += 1
                             if source['aoa'] is not None:
                                 state.aoa_status_counts[source['aoa']['status']] += 1
+                                state.aoa_status_by_source[(source['id'],
+                                                            source['aoa']['status'])] += 1
                 for row in rows:
                     events.write(json.dumps({'type': 'two_source_window', **row},
                                             allow_nan=False) + '\n')
@@ -111,10 +121,19 @@ def capture_worker(overlay, stop_event, state, event_log_path, *,
         with state.lock:
             state.error = '{}: {}'.format(type(error).__name__, error)
             state.visual.clear()
-        with event_log_path.open('a', encoding='utf-8') as events:
-            events.write(json.dumps({'type': 'capture_error', 'error': state.error,
-                                     'traceback': traceback.format_exc()},
-                                    allow_nan=False) + '\n')
+        error_event = {'type': 'capture_error', 'error': state.error,
+                       'traceback': traceback.format_exc(),
+                       'processed_packets': state.packets,
+                       'packet_cpu': p50_p95(state.packet_cpu_ms),
+                       'packet_wall': p50_p95(state.packet_wall_ms),
+                       'aoa_status_counts': dict(state.aoa_status_counts)}
+        if hasattr(error, 'diagnostics'):
+            error_event['diagnostics'] = error.diagnostics
+        try:
+            with event_log_path.open('a', encoding='utf-8') as events:
+                events.write(json.dumps(error_event, allow_nan=False) + '\n')
+        except OSError:
+            pass
         if capture is not None and capture._state == 'running':
             try:
                 capture.stop(timeout=5.0)
@@ -179,7 +198,7 @@ def main(argv=None):
     if not overlay.is_loaded():
         raise RuntimeError('Combined candidate did not load')
     stop_event = threading.Event()
-    state = LiveState()
+    state = LiveState(max_age_s=0.9 if args.max_sources == 2 else 0.5)
     worker = threading.Thread(
         target=capture_worker, args=(overlay, stop_event, state, events_path),
         kwargs={'max_sources': args.max_sources,
@@ -202,6 +221,7 @@ def main(argv=None):
     camera_read_ms = []
     hdmi_submit_ms = []
     exported = []
+    exported_visibility_counts = set()
     invalid_frames = 0
     start_time = time.monotonic()
     try:
@@ -216,7 +236,10 @@ def main(argv=None):
                 raise RuntimeError('PCM/AoA worker failed: ' + state.error)
             read_start = time.monotonic()
             ok, frame = camera.read()
-            camera_read_ms.append((time.monotonic() - read_start) * 1000)
+            read_ms = (time.monotonic() - read_start) * 1000
+            camera_read_ms.append(read_ms)
+            if read_ms > 2000:
+                raise RuntimeError('C920 frame read stalled for {:.1f} ms'.format(read_ms))
             if not ok or frame is None or frame.shape[:2] != (args.height, args.width):
                 invalid_frames += 1
                 if invalid_frames >= 5:
@@ -233,13 +256,16 @@ def main(argv=None):
             selected = selected_frame(frame, rendered, args.view)
             out = hdmi.newframe()
             np.asarray(out)[...] = selected
-            if submitted < 5 or (submitted % max(1, int(args.camera_fps)) == 0
-                                 and len(exported) < 20):
+            if (submitted < 5 or
+                    (len(visible) not in exported_visibility_counts and len(exported) < 20) or
+                    (submitted % max(1, int(args.camera_fps)) == 0
+                     and len(exported) < 20)):
                 path = frames_dir / 'submitted_{:06d}.png'.format(submitted)
                 if not video.cv2.imwrite(str(path), np.asarray(out)):
                     raise RuntimeError('Could not export PS framebuffer before HDMI')
                 exported.append({'file': path.name, 'frame_index': submitted,
                                  'view': args.view, 'visible_sources': visible})
+                exported_visibility_counts.add(len(visible))
             submit_start = time.monotonic()
             hdmi.writeframe(out)
             hdmi_submit_ms.append((time.monotonic() - submit_start) * 1000)
@@ -264,6 +290,10 @@ def main(argv=None):
                 'camera_hfov_deg': args.hfov_deg, 'camera_vfov_deg': args.vfov_deg,
                 'max_sources': args.max_sources,
                 'manual_frequencies_hz': list(manual), 'view': args.view,
+                'aoa_update_stride_windows': 64 if args.max_sources == 2 else 16,
+                'aoa_max_fits_per_window': 1,
+                'aoa_max_refinement_seeds': 2 if args.max_sources == 2 else 4,
+                'visual_max_age_s': 0.9 if args.max_sources == 2 else 0.5,
             },
             'capture': state.capture_result,
             'pcm_packets': state.packets,
@@ -272,6 +302,10 @@ def main(argv=None):
             'pcm_packet_cpu': p50_p95(state.packet_cpu_ms),
             'pcm_packet_wall': p50_p95(state.packet_wall_ms),
             'aoa_status_counts': dict(state.aoa_status_counts),
+            'aoa_status_by_source': {
+                '{}:{}'.format(source_id, status): count
+                for (source_id, status), count in state.aoa_status_by_source.items()},
+            'present_windows_by_source': dict(state.present_windows_by_source),
             'camera_hdmi': {
                 'frames_submitted': submitted,
                 'fps_submitted': submitted / max(1e-9, time.monotonic() - start_time),
