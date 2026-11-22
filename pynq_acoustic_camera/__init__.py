@@ -24,6 +24,7 @@ _LAZY.update({name: '.single_tone' for name in (
     'ToneDetectorConfig', 'StreamingSingleToneDetector', 'SingleToneEventTracker')})
 _LAZY.update({name: '.single_source_aoa' for name in (
     'AoAConfig', 'SingleSourceAoAEstimator')})
+_LAZY.update({'SingleSourcePcmPipeline': '.single_source_pipeline'})
 _LAZY.update({'HardwareTrigger': '.hw_trigger', 'MicrophoneArrayOverlay': '.array',
               'KinematicsDashboard': '.kinematics_dashboard',
               'PdmCandidate': '.pdm_candidate',
