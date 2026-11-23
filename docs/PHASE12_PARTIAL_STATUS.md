@@ -47,6 +47,16 @@ anterior. El commit que añadió esa ruta es `7f568ee6758ef192edef649e9f77f08700
 está en la rama local `phase/12-two-source`, aún no publicada. HW no cambió de
 su rama publicada de fase 11.
 
+Como avance independiente, se ejecutó una caracterización sintética del
+detector en PC: 0/3 ensayos resolvieron pares separados por hasta 100 Hz y 3/3
+resolvieron separaciones probadas desde 120 Hz; los tonos 1550/2350 Hz se
+recuperaron en 3/3 semillas en las 25 combinaciones exploradas de ruido y
+relación de amplitud 1:1–12:1. Los controles sintéticos de ruido y un solo tono
+no generaron pistas dobles. El resultado es exploratorio, no mide falsos
+positivos acústicos ni establece umbrales de aceptación. Detalle reproducible:
+[`caracterización PC`](phase12-pc-characterization.md) y
+[`evidencia JSON`](../../evidence/phase-12-step-05/result.json).
+
 Los dos scripts exploratorios de fase 10 sin seguimiento en SW se conservan
 sin cambios.
 
