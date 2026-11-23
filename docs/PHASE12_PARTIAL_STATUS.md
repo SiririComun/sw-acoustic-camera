@@ -44,9 +44,8 @@ El 2026-11-22 pasaron 68 pruebas host de `test_two_tone.py`,
 `test_single_source_aoa.py`. También pasaron `py_compile` de los runners nuevos
 y `--help` del lanzador. La ruta audio-only corrió en la PYNQ con el resultado
 anterior. El commit que añadió esa ruta es `7f568ee6758ef192edef649e9f77f08700e481e2`;
-el último commit local de SW, con este cierre parcial, es
-`a6fc688a6eabe888a22a74e98c2d83f5f2732f26` en `phase/12-two-source`; aún no
-se publica. HW no cambió de su rama publicada de fase 11.
+está en la rama local `phase/12-two-source`, aún no publicada. HW no cambió de
+su rama publicada de fase 11.
 
 Los dos scripts exploratorios de fase 10 sin seguimiento en SW se conservan
 sin cambios.
