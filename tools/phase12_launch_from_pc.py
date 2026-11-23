@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Interactive LaZ2 trial with timed host stereo playback and evidence copy.
 
-Run in the PC user's terminal. SSH requests sudo interactively on LaZ2; this
-tool never reads, stores, or asks for the password itself.
+Run in the PC user's terminal. SSH and sudo request their passwords
+interactively; this tool never reads, stores, or embeds them in commands.
 """
 
 import argparse
@@ -38,10 +38,13 @@ def main(argv=None):
         raise ValueError('source1 requires max_sources=2')
 
     stamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')
-    output = WORKSPACE / 'evidence' / 'phase-12-step-04' / ('board-live-' + stamp)
+    output = WORKSPACE / 'evidence' / 'final-part-01' / ('board-live-' + stamp)
     output.mkdir(parents=True, exist_ok=False)
     stimulus = output / 'stimulus.wav'
-    make_tones([str(stimulus), '--seconds', '34'])
+    tone_args = [str(stimulus), '--seconds', '34']
+    if args.max_sources == 1:
+        tone_args.extend(['--single-frequency', '1550'])
+    make_tones(tone_args)
     remote_output = REMOTE_ROOT + '/live_' + stamp
     frequencies = '1550 2350' if args.max_sources == 2 else '1550'
     command = (
@@ -67,7 +70,9 @@ def main(argv=None):
     try:
         with (output / 'board.log').open('wb') as log:
             board = subprocess.Popen(
-                ['ssh', '-tt', '-o', 'ConnectTimeout=10', REMOTE, command],
+                ['ssh', '-tt', '-o', 'ConnectTimeout=10',
+                 '-o', 'PubkeyAuthentication=no',
+                 '-o', 'PreferredAuthentications=password', REMOTE, command],
                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             selector = selectors.DefaultSelector()
             selector.register(board.stdout, selectors.EVENT_READ)
@@ -92,8 +97,14 @@ def main(argv=None):
                                            check=True)
                             playback = subprocess.Popen(
                                 ['paplay', '--volume=65536', str(stimulus)])
-                            print('\nPC playback started: pulsed stereo 1550 Hz left, '
-                                  '2350 Hz right', flush=True)
+                            if args.max_sources == 1:
+                                print('\nPC playback started: pulsed 1550 Hz from '
+                                      'left channel only at 100% application volume',
+                                      flush=True)
+                            else:
+                                print('\nPC playback started: pulsed stereo 1550 Hz '
+                                      'left, 2350 Hz right at 100% application volume',
+                                      flush=True)
                     if board.poll() is not None and not selector.get_map():
                         break
             finally:
@@ -108,7 +119,9 @@ def main(argv=None):
                         '1' if old_mute == 'Mute: yes' else '0'], check=True)
 
     copied = subprocess.run(
-        ['scp', '-qr', REMOTE + ':' + remote_output + '/.', str(output)],
+        ['scp', '-o', 'PubkeyAuthentication=no',
+         '-o', 'PreferredAuthentications=password', '-qr',
+         REMOTE + ':' + remote_output + '/.', str(output)],
         check=False)
     print('board_exit={} evidence_copy_exit={} ready={} path={}'.format(
         board_exit, copied.returncode, ready, output), flush=True)

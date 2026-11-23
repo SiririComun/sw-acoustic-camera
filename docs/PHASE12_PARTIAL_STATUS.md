@@ -4,6 +4,18 @@ La fase amplía detección, localización provisional y visualización a dos ton
 en paralelo. Este documento registra el alcance que sí está demostrado y los
 criterios que siguen pendientes. **La fase 12 no está cerrada.**
 
+## Ensayo posterior: Parte 1 del sistema final (2026-11-23)
+
+La prueba de una fuente con 1550 Hz pulsado confirmó durante una ejecución en
+LaZ2 la ruta simultánea PCM+C920+HDMI OUT con el BIT/HWH combinado existente.
+Se enviaron 706 cuadros (14,88 FPS), se devolvieron 528 paquetes PCM y no hubo
+discontinuidades, overflows ni clips. El usuario confirmó video en vivo y un
+punto rojo tras los pulsos, además de oír el tono. El punto quedó fuera de la
+posición correcta; AoA, geometría y mapa siguen provisionales. Esto completa la
+Parte 1, pero no valida la integración de dos fuentes requerida para el alcance
+dual de 12.4 ni acepta 12.5. Véase la
+[evidencia completa](../../evidence/final-part-01/README.md).
+
 ## Estado por subpaso
 
 | Subpaso | Estado | Comprobación y evidencia | Límite actual |
@@ -11,7 +23,7 @@ criterios que siguen pendientes. **La fase 12 no está cerrada.**
 | 12.1, detector configurable | Prototipo SW completado en PC | Modos automático/manual y máximo de una/dos fuentes; casos de silencio, ruido, estabilidad y separación sintética | Sin aceptación acústica física |
 | 12.2, dos AoA | Prototipo SW completado en PC | Dos wavefronts sintéticos generan AoA independientes; una fuente puede seleccionarse sin alterar el orden de canales | Geometría y mapa de canales son provisionales |
 | 12.3, mapas | Prototipo SW completado en PC | Mapas individuales y combinado sobre video sintético | Sin medición espacial calibrada |
-| 12.4, integración LaZ2 | Parcial | PCM/AoA dual en audio-only por 45 s; ensayos conjuntos anteriores enviaron cuadros PS con dos mapas | La C920 desapareció del USB en la ejecución conjunta; falta operación sostenida PCM+C920+HDMI |
+| 12.4, integración LaZ2 | Parcial | PCM/AoA dual en audio-only por 45 s; además, la Parte 1 posterior completó una ejecución conjunta de una fuente con C920+HDMI | La integración conjunta de dos fuentes aún no está aceptada; las pruebas físicas calibradas siguen pendientes |
 | 12.5, aceptación física | Pendiente, no aceptada | Hay ensayos exploratorios con pulsos separados por parlante | Requiere geometría/mapa de canal confirmados en fases 9/10.4 y criterios físicos acordados |
 
 ## Evidencia de integración en placa
