@@ -3,6 +3,11 @@
 Software workspace for the acoustic camera on **PYNQ-Z2**.
 Distribution: `pynq-acoustic-camera`; import: `pynq_acoustic_camera`.
 
+Phase 12 has a partial closeout: PC detection/AoA/visualization and the
+camera-free dual-source audio path on LaZ2 are recorded in
+[`PHASE12_PARTIAL_STATUS.md`](docs/PHASE12_PARTIAL_STATUS.md). Sustained
+C920/HDMI coexistence and calibrated physical acceptance remain open.
+
 The accepted hardware remains the reviewed **two-channel XADC reference** from
 [HW v0.1.0-rc.2](https://github.com/SiririComun/hw-acoustic-camera/releases/tag/v0.1.0-rc.2).
 Phase 2 was functionally accepted on PYNQ-Z2 on 2026-11-11 (America/Bogota), on `phase/02-clock-control`: PDM identity and clock
