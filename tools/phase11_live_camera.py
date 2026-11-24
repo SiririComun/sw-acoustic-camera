@@ -32,6 +32,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from pynq_acoustic_camera.continuous_capture import ContinuousPcmCapture
+from pynq_acoustic_camera.pl_video_marker import PLVideoMarker
 from pynq_acoustic_camera.single_source_aoa import AoAConfig, SingleSourceAoAEstimator
 from pynq_acoustic_camera.single_source_pipeline import SingleSourcePcmPipeline
 
@@ -226,6 +227,8 @@ def main():
     parser.add_argument('--height', type=int, default=480)
     parser.add_argument('--camera-fps', type=float, default=30.0)
     parser.add_argument('--hdmi-fps', type=float, default=60.0)
+    parser.add_argument('--marker-backend', choices=('ps', 'pl'), default='ps',
+                        help='Compose the marker in OpenCV (ps) or the HDMI AXI-stream (pl)')
     args = parser.parse_args()
     if os.geteuid() != 0 or sys.prefix != '/usr/local/share/pynq-venv':
         raise RuntimeError('Run as root with the PYNQ venv Python')
@@ -256,6 +259,12 @@ def main():
     overlay = Overlay(str(args.bit), download=True, device=Device.active_device)
     if not overlay.is_loaded():
         raise RuntimeError('Combined candidate did not load')
+    pl_marker = None
+    if args.marker_backend == 'pl':
+        gpio = getattr(overlay, 'acoustic_marker_gpio', None)
+        if gpio is None:
+            raise RuntimeError('The loaded BIT/HWH does not expose acoustic_marker_gpio')
+        pl_marker = PLVideoMarker(gpio)
 
     worker = threading.Thread(target=capture_worker,
                               args=(overlay, stop_event, state, event_log_path),
@@ -286,7 +295,8 @@ def main():
         hdmi.cacheable_frames = False
         hdmi.configure(VideoMode(args.width, args.height, 24, args.hdmi_fps))
         hdmi.start()
-        print('PHASE11_LIVE_READY bit_sha256={} pcm_port=HP2'.format(bit_sha256), flush=True)
+        print('PHASE11_LIVE_READY bit_sha256={} pcm_port=HP2 marker_backend={}'.format(
+            bit_sha256, args.marker_backend), flush=True)
         while time.monotonic() - start_time < args.duration_seconds:
             if state.error:
                 raise RuntimeError('PCM/AoA worker failed: ' + state.error)
@@ -310,13 +320,16 @@ def main():
                 pixel = direction_pixel(direction, args.width, args.height,
                                         args.hfov_deg, args.vfov_deg)
                 if 0 <= pixel[0] < args.width and 0 <= pixel[1] < args.height:
-                    video.cv2.circle(frame, pixel, 20, (0, 0, 255), -1)
+                    if pl_marker is None:
+                        video.cv2.circle(frame, pixel, 20, (0, 0, 255), -1)
                     marker_frames += 1
                 else:
                     pixel = None
             else:
                 pixel = None
                 no_direction_frames += 1
+            if pl_marker is not None:
+                pl_marker.set_pixel(pixel)
             out = hdmi.newframe()
             np.asarray(out)[...] = frame
             if submitted < 5 or (submitted % max(1, int(args.camera_fps)) == 0
@@ -324,10 +337,16 @@ def main():
                 path = frame_dir / 'submitted_{:06d}.png'.format(submitted)
                 if not video.cv2.imwrite(str(path), np.asarray(out)):
                     raise RuntimeError('Could not export PS framebuffer before HDMI')
-                exported.append({'file': path.name, 'frame_index': submitted,
-                                 'marker_pixel': list(pixel) if pixel else None,
-                                 'aoa_status': last_status,
-                                 'aoa_age_ms': direction_age_ms})
+                frame_record = {
+                    'file': path.name,
+                    'frame_index': submitted,
+                    'requested_marker_pixel': list(pixel) if pixel else None,
+                    'aoa_status': last_status,
+                    'aoa_age_ms': direction_age_ms,
+                }
+                if pl_marker is None:
+                    frame_record['marker_pixel'] = frame_record['requested_marker_pixel']
+                exported.append(frame_record)
             submit_start = time.monotonic()
             hdmi.writeframe(out)
             hdmi_submit_ms.append((time.monotonic() - submit_start) * 1000.0)
@@ -335,6 +354,8 @@ def main():
     finally:
         stop_event.set()
         worker.join(timeout=12.0)
+        if pl_marker is not None:
+            pl_marker.set_pixel(None)
         camera.release()
         if hdmi is not None:
             hdmi.close()
@@ -348,7 +369,8 @@ def main():
             'status': 'measurement_recorded_not_evaluated',
             'started_utc': run_started_utc,
             'candidate': {'bit': str(args.bit), 'bit_sha256': bit_sha256,
-                          'hwh_sha256': hwh_sha256},
+                          'hwh_sha256': hwh_sha256,
+                          'marker_backend': args.marker_backend},
             'provisional_setup': {
                 'array_geometry': 'reported 50x50 mm square, concentric with camera',
                 'pcm_channels_by_port': [0, 1, 2, 3],
@@ -369,11 +391,17 @@ def main():
                 'frames_submitted': submitted,
                 'frames_with_valid_aoa_marker': marker_frames,
                 'frames_without_current_valid_aoa': no_direction_frames,
+                'marker_backend': args.marker_backend,
+                'pl_marker_commands_enabled': pl_marker is not None,
+                'pl_marker_pixels_verified': False if pl_marker is not None else None,
                 'fps_submitted': submitted / max(1e-9, time.monotonic() - start_time),
                 'camera_read': p50_p95(camera_read_ms),
                 'hdmi_submit': p50_p95(hdmi_submit_ms),
                 'ps_frame_exports': exported,
-                'frame_export_point': 'PS framebuffer immediately before HDMI writeframe',
+                'frame_export_point': (
+                    'unmarked PS framebuffer immediately before HDMI; PL overlays marker'
+                    if pl_marker is not None else
+                    'PS framebuffer with software marker immediately before HDMI'),
             },
             'physical_calibration': 'pending Phase 9; this is not physical AoA acceptance',
         }
