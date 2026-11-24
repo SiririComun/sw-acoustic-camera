@@ -32,6 +32,9 @@ _LAZY.update({'HardwareTrigger': '.hw_trigger', 'MicrophoneArrayOverlay': '.arra
               'PdmCandidateIntegrityError': '.pdm_candidate',
               'PdmClockControl': '.pdm_control', 'PdmIdentity': '.pdm_control',
               'PdmInterfaceError': '.pdm_control', 'PdmIdentityError': '.pdm_control'})
+_LAZY.update({'BuzzerPulse': '.buzzer_pulse',
+              'PulsedTdoAAoAEstimator': '.pulsed_tdoa',
+              'PulseToAConfig': '.pulsed_tdoa'})
 
 
 def __getattr__(name):
